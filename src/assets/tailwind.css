@@ -1,0 +1,61 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-900;
+}
+
+/* 移动端优化：禁用点击高亮 */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* 移动端优化：防止长按选择 */
+@media (max-width: 768px) {
+  .no-select {
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  /* 安全区域适配（iPhone 刘海屏） */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* 移动端按钮最小点击区域 */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+/* 移动端输入框优化 */
+.mobile-input {
+  @apply text-base;
+  font-size: 16px !important; /* 防止 iOS 自动缩放 */
+}
+
+/* 点击反馈效果 */
+.touch-feedback {
+  @apply active:opacity-70 active:scale-[0.98] transition-all duration-100;
+}
+
+/* 下拉刷新指示器 */
+.pull-indicator {
+  @apply fixed left-0 right-0 top-0 flex items-center justify-center pointer-events-none z-50;
+  transition: opacity 0.2s;
+}
+
