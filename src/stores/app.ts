@@ -177,6 +177,16 @@ export const useAppStore = defineStore('app', {
     },
   },
   actions: {
+    // 计算升级到下一级所需的经验
+    expNeed(level: number): number {
+      const thresholds = this.data.growth.thresholds
+      if (level >= 1 && level <= thresholds.length) {
+        return thresholds[level - 1]
+      }
+      // 满级后每级固定需要 200 经验
+      return this.data.growth.badgeEveryExp
+    },
+
     persist(skipCloud?: boolean) {
       saveJson(LS_KEY, this.data)
       if (!skipCloud && this.cloudSyncEnabled) {
@@ -656,6 +666,84 @@ export const useAppStore = defineStore('app', {
     resetData() {
       this.data = initialData()
       this.persist()
+    },
+
+    // 自动备份相关方法
+    async refreshAutoBackupTarget() {
+      try {
+        const handle = await getSavedHandle()
+        this.ui.autoBackupHasTarget = !!handle
+        this.ui.autoBackupTargetName = handle?.name ?? ''
+      } catch {
+        this.ui.autoBackupHasTarget = false
+        this.ui.autoBackupTargetName = ''
+      }
+    },
+
+    async setAutoBackupEnabled(enabled: boolean) {
+      this.ui.autoBackupEnabled = enabled
+      saveJson(LS_PREF_AUTO_BACKUP, enabled)
+      if (enabled) {
+        await this.runAutoBackupOnce()
+      }
+    },
+
+    async pickAutoBackupFile() {
+      const handle = await pickTargetFile()
+      this.ui.autoBackupHasTarget = true
+      this.ui.autoBackupTargetName = handle.name
+      await this.runAutoBackupOnce()
+    },
+
+    async runAutoBackupOnce() {
+      if (autoBackupRunning) return
+      autoBackupRunning = true
+      try {
+        const json = this.exportData()
+        await writeBackupJson(json)
+        this.ui.autoBackupLastOkAt = Date.now()
+        this.ui.autoBackupLastError = null
+      } catch (e: any) {
+        this.ui.autoBackupLastError = e.message
+      } finally {
+        autoBackupRunning = false
+      }
+    },
+
+    async clearAutoBackupFile() {
+      await clearSavedHandle()
+      this.ui.autoBackupHasTarget = false
+      this.ui.autoBackupTargetName = ''
+    },
+
+    setAutoBackupIntervalSec(sec: number) {
+      this.ui.autoBackupIntervalSec = Math.max(10, Math.floor(sec))
+      saveJson(LS_PREF_AUTO_BACKUP_INTERVAL, this.ui.autoBackupIntervalSec)
+    },
+
+    startAutoBackupLoop() {
+      if (autoBackupTimer) return
+      // 页面隐藏时自动备份
+      const handleVisibility = async () => {
+        if (document.hidden && this.ui.autoBackupEnabled && this.ui.autoBackupHasTarget) {
+          await this.runAutoBackupOnce()
+        }
+      }
+      document.addEventListener('visibilitychange', handleVisibility)
+
+      // 定时备份
+      autoBackupTimer = window.setInterval(async () => {
+        if (this.ui.autoBackupEnabled && this.ui.autoBackupHasTarget) {
+          await this.runAutoBackupOnce()
+        }
+      }, this.ui.autoBackupIntervalSec * 1000)
+    },
+
+    stopAutoBackupLoop() {
+      if (autoBackupTimer) {
+        window.clearInterval(autoBackupTimer)
+        autoBackupTimer = null
+      }
     },
   },
 })

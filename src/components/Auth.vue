@@ -44,7 +44,7 @@ async function handleSubmit() {
   if (isLogin.value) {
     const result = await auth.login(username.value.trim(), password.value)
     if (!result.ok) {
-      error.value = result.error
+      error.value = result.error || '登录失败'
     }
   } else {
     const result = await auth.register(username.value.trim(), password.value)
@@ -52,7 +52,7 @@ async function handleSubmit() {
       // 注册成功后自动登录
       await auth.login(username.value.trim(), password.value)
     } else {
-      error.value = result.error
+      error.value = result.error || '注册失败'
     }
   }
 
