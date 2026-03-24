@@ -4,14 +4,15 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch index.ts",
-    "start": "node --loader tsx index.ts"
+    "start": "npx tsx index.ts"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",
     "cors": "^2.8.5",
     "express": "^4.21.2",
     "jsonwebtoken": "^9.0.2",
-    "sql.js": "^1.12.0"
+    "sql.js": "^1.12.0",
+    "tsx": "^4.19.3"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -19,7 +20,6 @@
     "@types/express": "^5.0.1",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.13.10",
-    "@types/sql.js": "^1.4.9",
-    "tsx": "^4.19.3"
+    "@types/sql.js": "^1.4.9"
   }
 }
