@@ -604,9 +604,6 @@ function handleLogout() {
       <div class="text-sm text-slate-600 mt-2">
         软件无需注册登录，不收集任何个人信息，免费供大家使用。可以任意拷贝分发。
       </div>
-      <div class="feedback mt-4">
-        意见反馈请联系微信：<span class="font-semibold">duan cong</span>（暗号：班级宠物园）
-      </div>
       <div class="mt-6 pt-6 border-t border-slate-200">
         <div class="text-sm font-semibold text-slate-700 mb-3">当前账号</div>
         <div class="text-sm text-slate-600">{{ auth.currentUser?.username }}</div>
