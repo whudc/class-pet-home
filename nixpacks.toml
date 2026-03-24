@@ -1,0 +1,8 @@
+[phases.setup]
+nixPkgs = ["nodejs-22_x"]
+
+[phases.install]
+cmds = ["npm --prefix server install"]
+
+[start]
+cmd = "cd server && npx tsx index.ts"

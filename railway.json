@@ -4,12 +4,9 @@
     "builder": "NIXPACKS"
   },
   "deploy": {
-    "startCommand": "cd server && npx tsx index.ts",
+    "startCommand": "cd server && npm install && npx tsx index.ts",
     "healthcheckPath": "/api/health",
-    "healthcheckTimeout": 30,
-    "restartPolicyType": "ON_FAILURE",
-    "env": {
-      "PORT": "3000"
-    }
+    "healthcheckTimeout": 60,
+    "restartPolicyType": "ON_FAILURE"
   }
 }
