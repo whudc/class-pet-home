@@ -21,7 +21,7 @@ app.use(cors())
 app.use(express.json({ limit: '10mb' }))
 
 // 服务前端静态文件
-app.use(express.static(path.join(__dirname, '../dist')))
+app.use(express.static(path.join(__dirname, '../../dist')))
 
 // 路由
 app.use('/api/auth', authRoutes)
@@ -34,7 +34,7 @@ app.get('/api/health', (req, res) => {
 
 // SPA 回退路由
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../dist/index.html'))
+  res.sendFile(path.join(__dirname, '../../dist/index.html'))
 })
 
 app.listen(PORT, HOST, () => {
