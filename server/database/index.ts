@@ -23,15 +23,22 @@ export async function getDatabase(): Promise<Database> {
   if (!db) {
     const SQL = await initSqlJs()
 
+    console.log('Checking database at:', dbPath)
+    const dbExists = fs.existsSync(dbPath)
+    console.log('Database exists:', dbExists)
+
     // 尝试加载现有数据库
     try {
-      if (fs.existsSync(dbPath)) {
+      if (dbExists) {
         const fileBuffer = fs.readFileSync(dbPath)
         db = new SQL.Database(fileBuffer)
+        console.log('Database loaded from file, size:', fileBuffer.length, 'bytes')
       } else {
         db = new SQL.Database()
+        console.log('Creating new in-memory database')
       }
-    } catch {
+    } catch (err) {
+      console.error('Failed to load database, creating new:', err)
       db = new SQL.Database()
     }
   }
@@ -44,6 +51,7 @@ export function saveDatabase() {
   const data = db.export()
   const buffer = Buffer.from(data)
   fs.writeFileSync(dbPath, buffer)
+  console.log('Database saved to:', dbPath, 'size:', buffer.length, 'bytes')
 }
 
 export async function initDatabase() {

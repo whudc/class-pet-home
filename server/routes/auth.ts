@@ -23,8 +23,10 @@ export function authMiddleware(req: express.Request, res: express.Response, next
     const payload = jwt.verify(token, JWT_SECRET) as { userId: string; username: string }
     req.userId = payload.userId
     req.username = payload.username
+    console.log('Auth middleware: user authenticated', { userId: payload.userId, username: payload.username })
     next()
-  } catch {
+  } catch (err) {
+    console.error('Auth middleware: token verification failed', err)
     return res.status(401).json({ error: 'Token 无效，请重新登录' })
   }
 }
@@ -106,6 +108,8 @@ router.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body
 
+    console.log('Login attempt:', { username })
+
     if (!username || !password) {
       return res.status(400).json({ error: '用户名和密码不能为空' })
     }
@@ -119,12 +123,15 @@ router.post('/login', async (req, res) => {
 
     if (!hasRow) {
       stmt.free()
+      console.log('Login failed: user not found')
       return res.status(404).json({ error: '用户名不存在' })
     }
 
     // 获取用户数据
     const userRow = stmt.getAsObject()
     stmt.free()
+
+    console.log('User found:', userRow)
 
     const user: any = {
       id: userRow.id,
@@ -136,11 +143,14 @@ router.post('/login', async (req, res) => {
     // 验证密码
     const valid = await bcrypt.compare(password, user.password_hash)
     if (!valid) {
+      console.log('Login failed: invalid password')
       return res.status(401).json({ error: '密码错误' })
     }
 
     // 生成 Token
     const token = generateToken(user.id, user.username)
+
+    console.log('Login successful:', user.username)
 
     res.json({
       ok: true,
