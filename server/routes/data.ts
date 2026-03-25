@@ -18,9 +18,9 @@ declare global {
 router.use(authMiddleware)
 
 // 获取用户数据
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const db = getDatabase()
+    const db = await getDatabase()
     const userId = req.userId!
 
     const stmt = db.prepare('SELECT data_json, version, updated_at FROM user_data WHERE user_id = :userId')
@@ -48,7 +48,7 @@ router.get('/', (req, res) => {
 })
 
 // 保存用户数据
-router.post('/save', (req, res) => {
+router.post('/save', async (req, res) => {
   try {
     const { data, version } = req.body
     const userId = req.userId!
@@ -57,7 +57,7 @@ router.post('/save', (req, res) => {
       return res.status(400).json({ error: '数据不能为空' })
     }
 
-    const db = getDatabase()
+    const db = await getDatabase()
     const now = Date.now()
     const newVersion = (version || 0) + 1
 
@@ -104,12 +104,12 @@ router.post('/save', (req, res) => {
 })
 
 // 同步数据（带版本控制）
-router.post('/sync', (req, res) => {
+router.post('/sync', async (req, res) => {
   try {
     const { data, clientVersion, deviceId } = req.body
     const userId = req.userId!
 
-    const db = getDatabase()
+    const db = await getDatabase()
     const now = Date.now()
 
     // 获取服务器数据

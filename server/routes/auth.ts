@@ -114,7 +114,7 @@ router.post('/login', async (req, res) => {
       return res.status(400).json({ error: '用户名和密码不能为空' })
     }
 
-    const db = getDatabase()
+    const db = await getDatabase()
 
     // 查找用户
     const stmt = db.prepare('SELECT * FROM users WHERE username = :username')
