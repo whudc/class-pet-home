@@ -166,7 +166,7 @@ function removeItem(item: ShopItem) {
   msg.value = '已删除商品'
 }
 
-const studentName = (id: string) => active.value.students.find((s) => s.id === id)?.name ?? '未知'
+const studentName = (id: string) => active.value?.students.find((s) => s.id === id)?.name ?? '未知学生'
 const fmt = (ts: number) => new Date(ts).toLocaleString('zh-CN')
 </script>
 

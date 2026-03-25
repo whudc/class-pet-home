@@ -26,7 +26,11 @@ const rulesInCategory = computed(() =>
 
 function pickRule(r: ScoreRule) {
   if (isBatch.value) app.applyRuleForStudents(targetIds.value, r)
-  else app.applyRule(student.value.id, r)
+  else {
+    const s = student.value
+    if (!s) return
+    app.applyRule(s.id, r)
+  }
   app.closeModal()
 }
 </script>
@@ -36,7 +40,7 @@ function pickRule(r: ScoreRule) {
     <template #title>
       📝 加分/扣分 <span class="chip-en">SCORE</span>
       <span class="text-slate-500 text-sm ml-2" v-if="isBatch">（{{ targetIds.length }} 人）</span>
-      <span class="text-slate-500 text-sm ml-2" v-else>（{{ student.name }}）</span>
+      <span class="text-slate-500 text-sm ml-2" v-else-if="student">（{{ student.name }}）</span>
     </template>
 
     <div class="modal-col">
