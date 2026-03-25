@@ -46,11 +46,15 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ error: '密码至少 6 个字符' })
     }
 
-    const db = getDatabase()
+    const db = await getDatabase()
 
-    // 检查用户名是否已存在
-    const existing = db.exec('SELECT id FROM users WHERE username = $username', { $username: username })
-    if (existing.length > 0 && existing[0].values.length > 0) {
+    // 检查用户名是否已存在 - 使用 run 和 bind 参数
+    const stmt = db.prepare('SELECT id FROM users WHERE username = :username')
+    stmt.bind({ ':username': username })
+    const hasUser = stmt.step()
+    stmt.free()
+
+    if (hasUser) {
       return res.status(409).json({ error: '用户名已存在' })
     }
 
@@ -60,21 +64,28 @@ router.post('/register', async (req, res) => {
     const now = Date.now()
 
     // 创建用户
-    db.exec(`INSERT INTO users (id, username, password_hash, created_at, updated_at) VALUES ($id, $username, $password, $createdAt, $updatedAt)`, {
-      $id: userId,
-      $username: username,
-      $password: passwordHash,
-      $createdAt: now,
-      $updatedAt: now
+    const insertUser = db.prepare('INSERT INTO users (id, username, password_hash, created_at, updated_at) VALUES (:id, :username, :password, :createdAt, :updatedAt)')
+    insertUser.run({
+      ':id': userId,
+      ':username': username,
+      ':password': passwordHash,
+      ':createdAt': now,
+      ':updatedAt': now
     })
+    insertUser.free()
 
     // 创建用户初始数据
-    db.exec(`INSERT INTO user_data (user_id, data_json, version, updated_at) VALUES ($userId, $data, $version, $updatedAt)`, {
-      $userId: userId,
-      $data: JSON.stringify({}),
-      $version: 1,
-      $updatedAt: now
+    const insertData = db.prepare('INSERT INTO user_data (user_id, data_json, version, updated_at) VALUES (:userId, :data, :version, :updatedAt)')
+    insertData.run({
+      ':userId': userId,
+      ':data': JSON.stringify({}),
+      ':version': 1,
+      ':updatedAt': now
     })
+    insertData.free()
+
+    // 保存数据库
+    saveDatabase()
 
     // 生成 Token
     const token = generateToken(userId, username)
@@ -102,18 +113,24 @@ router.post('/login', async (req, res) => {
     const db = getDatabase()
 
     // 查找用户
-    const result = db.exec('SELECT * FROM users WHERE username = $username', { $username: username })
-    if (result.length === 0 || result[0].values.length === 0) {
+    const stmt = db.prepare('SELECT * FROM users WHERE username = :username')
+    stmt.bind({ ':username': username })
+    const hasRow = stmt.step()
+
+    if (!hasRow) {
+      stmt.free()
       return res.status(404).json({ error: '用户名不存在' })
     }
 
-    // 获取用户数据 (列顺序：id, username, password_hash, created_at, updated_at)
-    const userRow = result[0].values[0]
+    // 获取用户数据
+    const userRow = stmt.getAsObject()
+    stmt.free()
+
     const user: any = {
-      id: userRow[0],
-      username: userRow[1],
-      password_hash: userRow[2],
-      created_at: userRow[3]
+      id: userRow.id,
+      username: userRow.username,
+      password_hash: userRow.password_hash,
+      created_at: userRow.created_at
     }
 
     // 验证密码
