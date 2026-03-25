@@ -1,1 +1,1 @@
-web: node --loader tsx index.ts
+web: npx tsx index.ts
