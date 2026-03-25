@@ -2,7 +2,7 @@
 cmds = ["npm install && npm --prefix server install"]
 
 [phases.build]
-cmds = ["npm run build"]
+cmds = ["npm run build && cp -r dist server/dist"]
 
 [start]
 cmd = "cd server && npx tsx index.ts"
