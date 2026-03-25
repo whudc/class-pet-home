@@ -13,9 +13,6 @@ const app = express()
 const PORT = process.env.PORT || 3000
 const HOST = process.env.HOST || '0.0.0.0'
 
-// 初始化数据库
-initDatabase()
-
 // 中间件
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
@@ -37,7 +34,21 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/index.html'))
 })
 
-app.listen(PORT, HOST, () => {
-  console.log(`Server running on http://${HOST}:${PORT}`)
-  console.log(`Frontend: http://${HOST}:${PORT}`)
-})
+// 异步启动服务器
+async function startServer() {
+  try {
+    // 初始化数据库
+    await initDatabase()
+    console.log('Database initialized successfully')
+
+    app.listen(PORT, HOST, () => {
+      console.log(`Server running on http://${HOST}:${PORT}`)
+      console.log(`Frontend: http://${HOST}:${PORT}`)
+    })
+  } catch (error) {
+    console.error('Failed to start server:', error)
+    process.exit(1)
+  }
+}
+
+startServer()

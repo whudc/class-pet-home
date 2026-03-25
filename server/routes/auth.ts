@@ -49,8 +49,8 @@ router.post('/register', async (req, res) => {
     const db = getDatabase()
 
     // 检查用户名是否已存在
-    const existing = db.prepare('SELECT id FROM users WHERE username = ?').get(username)
-    if (existing) {
+    const existing = db.exec('SELECT id FROM users WHERE username = $username', { $username: username })
+    if (existing.length > 0 && existing[0].values.length > 0) {
       return res.status(409).json({ error: '用户名已存在' })
     }
 
@@ -60,16 +60,21 @@ router.post('/register', async (req, res) => {
     const now = Date.now()
 
     // 创建用户
-    db.prepare(`
-      INSERT INTO users (id, username, password_hash, created_at, updated_at)
-      VALUES (?, ?, ?, ?, ?)
-    `).run(userId, username, passwordHash, now, now)
+    db.exec(`INSERT INTO users (id, username, password_hash, created_at, updated_at) VALUES ($id, $username, $password, $createdAt, $updatedAt)`, {
+      $id: userId,
+      $username: username,
+      $password: passwordHash,
+      $createdAt: now,
+      $updatedAt: now
+    })
 
     // 创建用户初始数据
-    db.prepare(`
-      INSERT INTO user_data (user_id, data_json, version, updated_at)
-      VALUES (?, ?, ?, ?)
-    `).run(userId, JSON.stringify({}), 1, now)
+    db.exec(`INSERT INTO user_data (user_id, data_json, version, updated_at) VALUES ($userId, $data, $version, $updatedAt)`, {
+      $userId: userId,
+      $data: JSON.stringify({}),
+      $version: 1,
+      $updatedAt: now
+    })
 
     // 生成 Token
     const token = generateToken(userId, username)
@@ -97,9 +102,18 @@ router.post('/login', async (req, res) => {
     const db = getDatabase()
 
     // 查找用户
-    const user: any = db.prepare('SELECT * FROM users WHERE username = ?').get(username)
-    if (!user) {
+    const result = db.exec('SELECT * FROM users WHERE username = $username', { $username: username })
+    if (result.length === 0 || result[0].values.length === 0) {
       return res.status(404).json({ error: '用户名不存在' })
+    }
+
+    // 获取用户数据 (列顺序：id, username, password_hash, created_at, updated_at)
+    const userRow = result[0].values[0]
+    const user: any = {
+      id: userRow[0],
+      username: userRow[1],
+      password_hash: userRow[2],
+      created_at: userRow[3]
     }
 
     // 验证密码

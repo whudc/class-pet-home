@@ -23,19 +23,18 @@ router.get('/', (req, res) => {
     const db = getDatabase()
     const userId = req.userId!
 
-    const userData: any = db.prepare(
-      'SELECT data_json, version, updated_at FROM user_data WHERE user_id = ?'
-    ).get(userId)
+    const result = db.exec('SELECT data_json, version, updated_at FROM user_data WHERE user_id = $userId', { $userId: userId })
 
-    if (!userData) {
+    if (result.length === 0 || result[0].values.length === 0) {
       return res.json({ ok: true, data: null, version: 0 })
     }
 
+    const row = result[0].values[0]
     res.json({
       ok: true,
-      data: JSON.parse(userData.data_json),
-      version: userData.version,
-      updatedAt: userData.updated_at
+      data: JSON.parse(row[0] as string),
+      version: row[1] as number,
+      updatedAt: row[2] as number
     })
   } catch (error: any) {
     console.error('Get data error:', error)
@@ -58,23 +57,25 @@ router.post('/save', (req, res) => {
     const newVersion = (version || 0) + 1
 
     // 检查是否存在用户数据
-    const existing: any = db.prepare(
-      'SELECT version FROM user_data WHERE user_id = ?'
-    ).get(userId)
+    const result = db.exec('SELECT version FROM user_data WHERE user_id = $userId', { $userId: userId })
+    const existing = result.length > 0 && result[0].values.length > 0
 
     if (existing) {
       // 更新现有数据
-      db.prepare(`
-        UPDATE user_data
-        SET data_json = ?, version = ?, updated_at = ?
-        WHERE user_id = ?
-      `).run(JSON.stringify(data), newVersion, now, userId)
+      db.exec(`UPDATE user_data SET data_json = $data, version = $version, updated_at = $updatedAt WHERE user_id = $userId`, {
+        $data: JSON.stringify(data),
+        $version: newVersion,
+        $updatedAt: now,
+        $userId: userId
+      })
     } else {
       // 创建新数据
-      db.prepare(`
-        INSERT INTO user_data (user_id, data_json, version, updated_at)
-        VALUES (?, ?, ?, ?)
-      `).run(userId, JSON.stringify(data), newVersion, now)
+      db.exec(`INSERT INTO user_data (user_id, data_json, version, updated_at) VALUES ($userId, $data, $version, $updatedAt)`, {
+        $userId: userId,
+        $data: JSON.stringify(data),
+        $version: newVersion,
+        $updatedAt: now
+      })
     }
 
     res.json({
@@ -98,17 +99,17 @@ router.post('/sync', (req, res) => {
     const now = Date.now()
 
     // 获取服务器数据
-    const serverData: any = db.prepare(
-      'SELECT data_json, version FROM user_data WHERE user_id = ?'
-    ).get(userId)
+    const result = db.exec('SELECT data_json, version FROM user_data WHERE user_id = $userId', { $userId: userId })
 
-    if (!serverData) {
+    if (result.length === 0 || result[0].values.length === 0) {
       // 服务器没有数据，使用客户端数据
       if (data) {
-        db.prepare(`
-          INSERT INTO user_data (user_id, data_json, version, updated_at)
-          VALUES (?, ?, ?, ?)
-        `).run(userId, JSON.stringify(data), 1, now)
+        db.exec(`INSERT INTO user_data (user_id, data_json, version, updated_at) VALUES ($userId, $data, $version, $updatedAt)`, {
+          $userId: userId,
+          $data: JSON.stringify(data),
+          $version: 1,
+          $updatedAt: now
+        })
       }
       return res.json({
         ok: true,
@@ -118,8 +119,9 @@ router.post('/sync', (req, res) => {
       })
     }
 
-    const serverVersion = serverData.version
-    const serverDataParsed = JSON.parse(serverData.data_json)
+    const serverData = result[0].values[0]
+    const serverVersion = serverData[1] as number
+    const serverDataParsed = JSON.parse(serverData[0] as string)
 
     // 如果客户端版本落后，返回服务器数据
     if ((clientVersion || 0) < serverVersion) {
@@ -144,11 +146,12 @@ router.post('/sync', (req, res) => {
 
     // 客户端版本更新，更新服务器数据
     if (data) {
-      db.prepare(`
-        UPDATE user_data
-        SET data_json = ?, version = ?, updated_at = ?
-        WHERE user_id = ?
-      `).run(JSON.stringify(data), clientVersion, now, userId)
+      db.exec(`UPDATE user_data SET data_json = $data, version = $version, updated_at = $updatedAt WHERE user_id = $userId`, {
+        $data: JSON.stringify(data),
+        $version: clientVersion,
+        $updatedAt: now,
+        $userId: userId
+      })
     }
 
     res.json({
