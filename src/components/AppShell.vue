@@ -25,6 +25,11 @@ function undoLatest() {
   else window.alert('已撤回最近一条评价')
 }
 
+function handleShareParent() {
+  // TODO: 实现分享家长功能
+  window.alert('分享家长功能待实现')
+}
+
 onMounted(async () => {
   await app.startAutoBackupLoop()
 })
@@ -98,8 +103,8 @@ watch(
       </div>
     </header>
 
-    <!-- 电脑端工具栏 -->
-    <div class="hidden sm:block mx-auto max-w-6xl px-3 sm:px-4 pt-20 pb-4">
+    <!-- 电脑端工具栏（仅班级主页显示） -->
+    <div v-if="app.activeView === 'classroom'" class="hidden sm:block mx-auto max-w-6xl px-3 sm:px-4 pt-20 pb-4">
       <div class="rounded-2xl bg-white border border-slate-200 p-4">
         <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-3">
@@ -125,9 +130,13 @@ watch(
             <SortMenu />
 
             <!-- 视图切换 -->
-            <button class="toolbar-btn">
-              <span>👤</span>
-              <span class="text-xs">个人</span>
+            <button
+              class="toolbar-btn"
+              :class="{ active: app.ui.cardViewMode === 'mini' }"
+              @click="app.toggleCardViewMode()"
+            >
+              <span>{{ app.ui.cardViewMode === 'large' ? '🗖' : '🗗' }}</span>
+              <span class="text-xs">{{ app.ui.cardViewMode === 'large' ? '迷你模式' : '大图模式' }}</span>
             </button>
 
             <!-- 批量模式 -->
@@ -138,6 +147,12 @@ watch(
             >
               <span>👥</span>
               <span class="text-xs">{{ app.ui.batchMode ? '退出批量' : '批量模式' }}</span>
+            </button>
+
+            <!-- 分享家长 -->
+            <button class="toolbar-btn" @click="handleShareParent">
+              <span>📤</span>
+              <span class="text-xs">分享家长</span>
             </button>
 
             <!-- 撤回 -->
@@ -151,22 +166,27 @@ watch(
     </div>
 
     <!-- 电脑端内容区域 -->
-    <main class="hidden sm:block mx-auto max-w-6xl px-3 sm:px-4 pb-8">
-      <StudentGrid />
+    <main class="hidden sm:block mx-auto max-w-6xl px-3 sm:px-4 pb-8" :style="{ paddingTop: app.activeView === 'classroom' ? 0 : '70px' }">
+      <StudentGrid v-if="app.activeView === 'classroom'" :key="'classroom'" />
+      <ModalLeaderboard v-else-if="app.activeView === 'leaderboard'" as-view :key="'leaderboard'" />
+      <ModalShop v-else-if="app.activeView === 'shop'" as-view :key="'shop'" />
+      <ModalRecords v-else-if="app.activeView === 'records'" as-view :key="'records'" />
+      <ModalSettings v-else-if="app.activeView === 'settings'" as-view :key="'settings'" />
+      <ModalClassManager v-else-if="app.activeView === 'classManager'" as-view :key="'classManager'" />
     </main>
 
     <!-- 移动端内容区域 -->
-    <main class="sm:hidden mx-auto max-w-6xl px-3 sm:px-4 py-4 sm:py-6">
-      <StudentGrid />
+    <main class="sm:hidden mx-auto max-w-6xl px-3 sm:px-4 py-4 sm:py-6" :style="{ paddingTop: app.activeView === 'classroom' ? 0 : '70px' }">
+      <StudentGrid v-if="app.activeView === 'classroom'" :key="'classroom'" />
+      <ModalLeaderboard v-else-if="app.activeView === 'leaderboard'" as-view :key="'leaderboard'" />
+      <ModalShop v-else-if="app.activeView === 'shop'" as-view :key="'shop'" />
+      <ModalRecords v-else-if="app.activeView === 'records'" as-view :key="'records'" />
+      <ModalSettings v-else-if="app.activeView === 'settings'" as-view :key="'settings'" />
+      <ModalClassManager v-else-if="app.activeView === 'classManager'" as-view :key="'classManager'" />
     </main>
 
     <ModalAdoptPet v-if="app.ui.modal === 'adopt'" />
     <ModalScore v-if="app.ui.modal === 'score'" />
-    <ModalSettings v-if="app.activeView === 'settings' || app.ui.modal === 'settings'" />
-    <ModalLeaderboard v-if="app.activeView === 'leaderboard' || app.ui.modal === 'leaderboard'" />
-    <ModalRecords v-if="app.activeView === 'records' || app.ui.modal === 'records'" />
-    <ModalClassManager v-if="app.activeView === 'classManager' || app.ui.modal === 'classManager'" />
-    <ModalShop v-if="app.activeView === 'shop' || app.ui.modal === 'shop'" />
 
     <BatchBar v-if="app.ui.batchMode" />
 

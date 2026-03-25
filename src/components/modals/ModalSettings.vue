@@ -5,6 +5,8 @@ import { useAuthStore } from '@/stores/auth'
 import type { ScoreCategory, ScoreRule } from '@/lib/models'
 import ModalBase from '@/components/modals/ModalBase.vue'
 
+defineProps<{ asView?: boolean }>()
+
 const app = useAppStore()
 const auth = useAuthStore()
 type Tab = 'rules' | 'growth' | 'data' | 'about'
@@ -16,6 +18,10 @@ watch(
   },
   { immediate: true }
 )
+
+function handleClose() {
+  app.setActiveView('classroom')
+}
 
 // --- 规则页
 const categories = computed(() => {
@@ -312,12 +318,12 @@ async function clearAutoBackup() {
 function handleLogout() {
   if (!confirm('确定要退出登录吗？')) return
   auth.logout()
-  app.closeModal()
+  handleClose()
 }
 </script>
 
 <template>
-  <ModalBase @close="app.closeModal()">
+  <ModalBase :as-view @close="handleClose">
     <template #title>⚙ 设置与帮助 <span class="chip-en">SETTINGS</span></template>
 
     <div class="content-wrap">

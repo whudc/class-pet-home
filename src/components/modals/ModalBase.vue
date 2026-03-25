@@ -1,11 +1,13 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import { useAppStore } from '@/stores/app'
+
+const props = defineProps<{
+  asView?: boolean
+}>()
 
 const emit = defineEmits<{ close: [] }>()
 const app = useAppStore()
-
-const isDesktopView = computed(() => !app.isMobileView)
 
 let prevBodyOverflow = ''
 let prevHtmlOverflow = ''
@@ -17,8 +19,7 @@ const isDragging = ref(false)
 const translateY = ref(0)
 
 function handleResize() {
-  // 640px 是 sm 断点
-  app.isMobileView = window.innerWidth <= 640
+  app.isMobileView = window.innerWidth < 640
 }
 
 onMounted(() => {
@@ -27,8 +28,7 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
   handleResize()
 
-  // 只在移动端禁用滚动
-  if (app.isMobileView) {
+  if (app.isMobileView && !props.asView) {
     document.body.style.overflow = 'hidden'
     document.documentElement.style.overflow = 'hidden'
   }
@@ -41,11 +41,7 @@ onBeforeUnmount(() => {
 })
 
 function onClose() {
-  if (app.isMobileView) {
-    emit('close')
-  } else {
-    app.setActiveView('classroom')
-  }
+  emit('close')
 }
 
 function onTouchStart(e: TouchEvent) {
@@ -77,50 +73,57 @@ function onTouchEnd() {
 </script>
 
 <template>
-  <!-- 移动端：模态框形式 -->
-  <div v-if="app.isMobileView" class="fixed inset-0 z-50 overscroll-contain safe-top safe-bottom">
-    <div class="absolute inset-0 bg-black/30 z-0" @click="emit('close')"></div>
-    <div
-      class="absolute inset-0 p-0 sm:p-4 flex items-stretch justify-center z-10"
-      @touchstart="onTouchStart"
-      @touchmove="onTouchMove"
-      @touchend="onTouchEnd"
-    >
+  <!-- view 模式：直接渲染内容 -->
+  <div v-if="asView" class="view-container">
+    <slot />
+  </div>
+
+  <!-- modal 模式 -->
+  <div v-else>
+    <!-- 移动端 modal -->
+    <div v-if="app.isMobileView" class="fixed inset-0 z-50 overscroll-contain safe-top safe-bottom">
+      <div class="absolute inset-0 bg-black/30 z-0" @click="emit('close')"></div>
       <div
-        ref="modalRef"
-        class="w-full sm:max-w-4xl sm:my-4 rounded-2xl sm:rounded-3xl bg-white shadow-soft border border-slate-100 overflow-hidden flex flex-col max-h-full sm:max-h-[calc(100vh-2rem)]"
-        :style="{ transform: translateY > 0 ? `translateY(${translateY}px)` : undefined, transition: isDragging ? 'none' : 'transform 0.2s' }"
+        class="absolute inset-0 p-0 sm:p-4 flex items-stretch justify-center z-10"
+        @touchstart="onTouchStart"
+        @touchmove="onTouchMove"
+        @touchend="onTouchEnd"
       >
-        <div class="px-3 py-2 sm:px-6 sm:py-4 border-b border-slate-100 flex items-center justify-between">
-          <div class="font-semibold text-slate-900 text-sm sm:text-base">
-            <slot name="title" />
+        <div
+          ref="modalRef"
+          class="w-full sm:max-w-4xl sm:my-4 rounded-2xl sm:rounded-3xl bg-white shadow-soft border border-slate-100 overflow-hidden flex flex-col max-h-full sm:max-h-[calc(100vh-2rem)]"
+          :style="{ transform: translateY > 0 ? `translateY(${translateY}px)` : undefined, transition: isDragging ? 'none' : 'transform 0.2s' }"
+        >
+          <div class="px-3 py-2 sm:px-6 sm:py-4 border-b border-slate-100 flex items-center justify-between">
+            <div class="font-semibold text-slate-900 text-sm sm:text-base">
+              <slot name="title" />
+            </div>
+            <button class="text-slate-400 hover:text-slate-700 p-2 touch-manipulation" @click="onClose()">✕</button>
           </div>
-          <button class="text-slate-400 hover:text-slate-700 p-2 touch-manipulation" @click="onClose()">✕</button>
-        </div>
-        <!-- 移动端下滑提示条 -->
-        <div class="sm:hidden flex justify-center pt-2 pb-1">
-          <div class="w-10 h-1 rounded-full bg-slate-200"></div>
-        </div>
-        <div class="p-3 sm:p-6 flex-1 min-h-0 overflow-y-auto overscroll-contain no-swipe-close">
-          <slot />
+          <div class="sm:hidden flex justify-center pt-2 pb-1">
+            <div class="w-10 h-1 rounded-full bg-slate-200"></div>
+          </div>
+          <div class="p-3 sm:p-6 flex-1 min-h-0 overflow-y-auto overscroll-contain no-swipe-close">
+            <slot />
+          </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <!-- 电脑端：直接显示内容 -->
-  <div v-else class="desktop-view-content">
-    <div class="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
-        <div class="font-semibold text-slate-900 text-base">
-          <slot name="title" />
+    <!-- 电脑端 modal -->
+    <div v-else class="desktop-modal">
+      <div class="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <div class="font-semibold text-slate-900 text-base">
+            <slot name="title" />
+          </div>
+          <button class="text-slate-400 hover:text-slate-700 p-2" @click="emit('close')">
+            ✕
+          </button>
         </div>
-        <button class="text-slate-400 hover:text-slate-700 p-2" @click="app.setActiveView('classroom')">
-          ✕
-        </button>
-      </div>
-      <div class="p-6">
-        <slot />
+        <div class="p-6">
+          <slot />
+        </div>
       </div>
     </div>
   </div>
@@ -129,5 +132,13 @@ function onTouchEnd() {
 <style scoped>
 :slotted(.chip-en) {
   @apply ml-2 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] tracking-wide border border-slate-200 bg-slate-50 text-slate-500;
+}
+
+.view-container {
+  @apply w-full;
+}
+
+.desktop-modal {
+  /* 容器样式由内部元素处理 */
 }
 </style>

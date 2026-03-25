@@ -4,20 +4,26 @@ import { useAppStore } from '@/stores/app'
 import ModalBase from '@/components/modals/ModalBase.vue'
 import type { ShopItem, ShopItemCategory } from '@/lib/models'
 
+defineProps<{ asView?: boolean }>()
+
 const app = useAppStore()
 
 type Tab = 'items' | 'records' | 'manage'
 const tab = ref<Tab>('items')
 
 const active = computed(() => app.activeClassroom)
-const students = computed(() => active.value.students)
+const students = computed(() => active.value?.students ?? [])
 const selectedStudentId = ref<string>(students.value[0]?.id ?? '')
 const selectedStudent = computed(() => students.value.find((s) => s.id === selectedStudentId.value) ?? students.value[0])
 
-const items = computed(() => app.data.shopItems.filter((x) => x.enabled))
-const records = computed(() => app.data.shopRecords.filter((r) => r.classroomId === active.value.id))
+const items = computed(() => (app.data?.shopItems ?? []).filter((x) => x.enabled))
+const records = computed(() => (app.data?.shopRecords ?? []).filter((r) => r.classroomId === active.value?.id))
 
 const msg = ref<string | null>(null)
+
+function handleClose() {
+  app.setActiveView('classroom')
+}
 
 function redeem(itemId: string) {
   msg.value = null
@@ -165,7 +171,7 @@ const fmt = (ts: number) => new Date(ts).toLocaleString('zh-CN')
 </script>
 
 <template>
-  <ModalBase @close="app.closeModal()">
+  <ModalBase :as-view @close="handleClose">
     <template #title>🛍 小商店 <span class="ml-2 chip-en">GIFT STORE</span></template>
 
     <div class="tabs">

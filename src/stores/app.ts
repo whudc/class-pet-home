@@ -85,6 +85,13 @@ function initialData(): AppData {
 export type SortMode = 'name' | 'number' | 'badges' | 'growth'
 
 function normalizeData(data: AppData): AppData {
+  // 确保基础数组属性存在
+  if (!Array.isArray((data as any).records)) (data as any).records = []
+  if (!Array.isArray((data as any).classrooms) || (data as any).classrooms.length === 0) {
+    (data as any).classrooms = [seedClassroom()]
+    ;(data as any).activeClassroomId = 'c1'
+  }
+
   for (const c of data.classrooms ?? []) {
     for (const s of c.students ?? []) {
       if (typeof (s as any).badges !== 'number') (s as any).badges = 0
@@ -110,42 +117,53 @@ function normalizeData(data: AppData): AppData {
 }
 
 export const useAppStore = defineStore('app', {
-  state: () => ({
-    data: normalizeData((loadJson<AppData>(LS_KEY) ?? initialData()) as AppData),
-    dataVersion: (parseInt(localStorage.getItem(LS_VERSION_KEY) || '0', 10) || 0) as number,
-    cloudSyncEnabled: false as boolean,
-    cloudSyncError: null as string | null,
-    ui: {
-      query: '',
-      sortMode: 'name' as SortMode,
-      modal: null as null | 'adopt' | 'score' | 'settings' | 'leaderboard' | 'records' | 'classManager' | 'shop',
-      modalStudentId: null as null | string,
-      modalStudentIds: [] as string[],
-      modalCategory: '学习' as ScoreCategory,
-      batchMode: false,
-      batchAction: 'score' as 'score' | 'adopt',
-      selectedStudentIds: [] as string[],
-      scoreFx: null as null | { studentId: string; kind: 'plus' | 'minus'; ts: number },
-      levelUp: null as null | { studentId: string; studentName: string; petId: string; level: number; ts: number },
-      autoBackupEnabled: (loadJson<boolean>(LS_PREF_AUTO_BACKUP) ?? false) as boolean,
-      autoBackupHasTarget: false,
-      autoBackupTargetName: '' as string,
-      autoBackupIntervalSec: (loadJson<number>(LS_PREF_AUTO_BACKUP_INTERVAL) ?? 60) as number,
-      autoBackupLastOkAt: null as null | number,
-      autoBackupLastError: null as null | string,
-    },
-    activeView: 'classroom' as 'classroom' | 'leaderboard' | 'shop' | 'records' | 'settings' | 'classManager',
-    isMobileView: false as boolean,
-  }),
+  state: () => {
+    const loadedData = loadJson<AppData>(LS_KEY)
+    const initial = initialData()
+    const mergedData = loadedData ? normalizeData({ ...initial, ...loadedData }) : initial
+
+    return {
+      data: mergedData,
+      dataVersion: (parseInt(localStorage.getItem(LS_VERSION_KEY) || '0', 10) || 0) as number,
+      cloudSyncEnabled: false as boolean,
+      cloudSyncError: null as string | null,
+      ui: {
+        query: '',
+        sortMode: 'name' as SortMode,
+        modal: null as null | 'adopt' | 'score' | 'settings' | 'leaderboard' | 'records' | 'classManager' | 'shop',
+        modalStudentId: null as null | string,
+        modalStudentIds: [] as string[],
+        modalCategory: '学习' as ScoreCategory,
+        batchMode: false,
+        batchAction: 'score' as 'score' | 'adopt',
+        selectedStudentIds: [] as string[],
+        scoreFx: null as null | { studentId: string; kind: 'plus' | 'minus'; ts: number },
+        levelUp: null as null | { studentId: string; studentName: string; petId: string; level: number; ts: number },
+        autoBackupEnabled: (loadJson<boolean>(LS_PREF_AUTO_BACKUP) ?? false) as boolean,
+        autoBackupHasTarget: false,
+        autoBackupTargetName: '' as string,
+        autoBackupIntervalSec: (loadJson<number>(LS_PREF_AUTO_BACKUP_INTERVAL) ?? 60) as number,
+        autoBackupLastOkAt: null as null | number,
+        autoBackupLastError: null as null | string,
+        cardViewMode: 'large' as 'large' | 'mini',
+      },
+      activeView: 'classroom' as 'classroom' | 'leaderboard' | 'shop' | 'records' | 'settings' | 'classManager',
+      isMobileView: false as boolean,
+    }
+  },
   getters: {
-    activeClassroom(state): Classroom {
-      const found = state.data.classrooms.find((c) => c.id === state.data.activeClassroomId)
-      return found ?? state.data.classrooms[0]
+    activeClassroom(state): Classroom | undefined {
+      const classrooms = state.data?.classrooms ?? []
+      if (classrooms.length === 0) return undefined
+      const found = classrooms.find((c) => c.id === state.data.activeClassroomId)
+      return found ?? classrooms[0]
     },
-    filteredStudents(state): Student[] {
-      const c = (this as any).activeClassroom as Classroom
-      const q = state.ui.query.trim()
-      let list = c.students
+    filteredStudents(): Student[] {
+      const c = this.activeClassroom
+      if (!c) return []
+      const students = c.students ?? []
+      const q = this.ui.query.trim()
+      let list = students
       if (q) list = list.filter((s) => s.name.includes(q) || (s.number ?? '').includes(q))
       const getNumber = (s: Student) => {
         const n = Number.parseInt(s.number ?? '', 10)
@@ -162,7 +180,7 @@ export const useAppStore = defineStore('app', {
       }
 
       list = [...list].sort((a, b) => {
-        switch (state.ui.sortMode) {
+        switch (this.ui.sortMode) {
           case 'name':
             return a.name.localeCompare(b.name, 'zh-CN')
           case 'number':
@@ -339,6 +357,7 @@ export const useAppStore = defineStore('app', {
     },
     addStudentToActiveClassroom(name: string, number?: string) {
       const c = this.activeClassroom
+      if (!c) return
       const trimmedName = name.trim()
       const trimmedNumber = (number ?? '').trim()
       if (!trimmedName) return
@@ -361,6 +380,7 @@ export const useAppStore = defineStore('app', {
     },
     updateStudentInActiveClassroom(studentId: string, patch: { name?: string; number?: string | null }) {
       const c = this.activeClassroom
+      if (!c) return false
       const s = c.students.find((x) => x.id === studentId)
       if (!s) return false
 
@@ -382,6 +402,7 @@ export const useAppStore = defineStore('app', {
     },
     removeStudentFromActiveClassroom(studentId: string) {
       const c = this.activeClassroom
+      if (!c) return
       const idx = c.students.findIndex((x) => x.id === studentId)
       if (idx < 0) return
       c.students.splice(idx, 1)
@@ -390,6 +411,7 @@ export const useAppStore = defineStore('app', {
     },
     bulkImportStudentsToActiveClassroom(lines: string) {
       const c = this.activeClassroom
+      if (!c) return 0
       const existedNumbers = new Set(c.students.map((s) => (s.number ?? '').trim()).filter(Boolean))
 
       const added: { name: string; number?: string }[] = []
@@ -427,16 +449,7 @@ export const useAppStore = defineStore('app', {
       this.ui.modalStudentIds = []
     },
     setActiveView(view: 'classroom' | 'leaderboard' | 'shop' | 'records' | 'settings' | 'classManager') {
-      // 如果点击当前激活的视图，不做任何事
-      if (this.activeView === view) return
-
       this.activeView = view
-      // 关闭之前的模态框
-      this.ui.modal = null
-      // 打开新视图对应的模态框
-      if (view !== 'classroom') {
-        this.openModal(view as any)
-      }
     },
     enterBatchMode() {
       this.ui.batchMode = true
@@ -450,6 +463,7 @@ export const useAppStore = defineStore('app', {
     setBatchAction(action: 'score' | 'adopt') {
       this.ui.batchAction = action
       const c = this.activeClassroom
+      if (!c) return
       const allowed = new Set<string>()
       for (const s of c.students) {
         if (action === 'score' && s.pet) allowed.add(s.id)
@@ -459,6 +473,7 @@ export const useAppStore = defineStore('app', {
     },
     toggleSelectStudent(id: string) {
       const c = this.activeClassroom
+      if (!c) return
       const s = c.students.find((x) => x.id === id)
       if (!s) return
       if (this.ui.batchAction === 'score' && !s.pet) return
@@ -472,8 +487,12 @@ export const useAppStore = defineStore('app', {
     clearSelection() {
       this.ui.selectedStudentIds = []
     },
+    toggleCardViewMode() {
+      this.ui.cardViewMode = this.ui.cardViewMode === 'large' ? 'mini' : 'large'
+    },
     selectAllFiltered() {
       const c = this.activeClassroom
+      if (!c) return
       const filteredIds = (this as any).filteredStudents.map((s: { id: string }) => s.id)
       const setFiltered = new Set(filteredIds)
       const allowed = c.students
@@ -484,6 +503,7 @@ export const useAppStore = defineStore('app', {
     },
     adoptPet(studentId: string, petId: PetId, petName: string) {
       const c = this.activeClassroom
+      if (!c) return
       const s = c.students.find((x) => x.id === studentId)
       if (!s) return
       if (s.pet) s.points = 0
@@ -492,6 +512,7 @@ export const useAppStore = defineStore('app', {
     },
     adoptPetForStudents(studentIds: string[], petId: PetId, petName: string, onlyIfNoPet = true) {
       const c = this.activeClassroom
+      if (!c) return
       const set = new Set(studentIds)
       for (const s of c.students) {
         if (!set.has(s.id)) continue
@@ -503,6 +524,7 @@ export const useAppStore = defineStore('app', {
     },
     applyRule(studentId: string, rule: ScoreRule) {
       const c = this.activeClassroom
+      if (!c) return
       const s = c.students.find((x) => x.id === studentId)
       if (!s) return
 
@@ -583,7 +605,9 @@ export const useAppStore = defineStore('app', {
       return { ok: true as const }
     },
     undoLatestScoreRecord(classroomId?: string) {
-      const cid = classroomId ?? this.activeClassroom.id
+      const c = this.activeClassroom
+      if (!c) return { ok: false as const, reason: '没有活跃班级' }
+      const cid = classroomId ?? c.id
       const r = this.data.records.find((x) => x.classroomId === cid)
       if (!r) return { ok: false as const, reason: '暂无可撤回的记录' }
       return this.undoScoreRecord(r.id)
@@ -593,6 +617,7 @@ export const useAppStore = defineStore('app', {
     },
     redeemShopItem(studentId: string, itemId: string) {
       const c = this.activeClassroom
+      if (!c) return { ok: false as const, reason: '没有活跃班级' }
       const s = c.students.find((x) => x.id === studentId)
       const item = this.data.shopItems.find((x) => x.id === itemId)
       if (!s || !item) return { ok: false as const, reason: '无效的学生或商品' }

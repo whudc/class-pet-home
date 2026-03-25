@@ -85,8 +85,8 @@ watch(() => app.data.records.length, () => {
       没有匹配的学生。你可以在"设置与帮助 → 数据管理"里导入示例数据。
     </div>
 
-    <div v-else class="grid gap-3 xs:gap-4 grid-cols-1 xs:grid-cols-2 lg:grid-cols-3">
-      <StudentCard v-for="s in students" :key="s.id" :student-id="s.id" />
+    <div v-else class="grid gap-3 xs:gap-4" :class="app.ui.cardViewMode === 'large' ? 'grid-cols-1 xs:grid-cols-2 lg:grid-cols-5' : 'grid-cols-2 xs:grid-cols-3 lg:grid-cols-10'">
+      <StudentCard v-for="s in students" :key="s.id" :student-id="s.id" :mini="app.ui.cardViewMode === 'mini'" />
     </div>
   </div>
 </template>

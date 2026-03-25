@@ -12,7 +12,7 @@ const isBatch = computed(() => targetIds.value.length > 1)
 
 const student = computed(() => {
   const c = app.activeClassroom
-  return c.students.find((x) => x.id === app.ui.modalStudentId)!
+  return c?.students?.find((x) => x.id === app.ui.modalStudentId)
 })
 
 const categories = computed(() => {

@@ -3,11 +3,14 @@ import { computed } from 'vue'
 import { useAppStore } from '@/stores/app'
 import ModalBase from '@/components/modals/ModalBase.vue'
 
+defineProps<{ asView?: boolean }>()
+
 const app = useAppStore()
 
 const list = computed(() => {
   const c = app.activeClassroom
-  return [...c.students].sort((a, b) => {
+  const students = c?.students ?? []
+  return [...students].sort((a, b) => {
     const byBadges = (b.badges ?? 0) - (a.badges ?? 0)
     if (byBadges !== 0) return byBadges
     const aLevel = a.pet?.level ?? 0
@@ -17,10 +20,14 @@ const list = computed(() => {
     return b.points - a.points
   })
 })
+
+function handleClose() {
+  app.setActiveView('classroom')
+}
 </script>
 
 <template>
-  <ModalBase @close="app.closeModal()">
+  <ModalBase :as-view @close="handleClose">
     <template #title>🏆 荣誉榜 <span class="chip-en">LEADERBOARD</span></template>
 
     <div class="table-head">
@@ -67,12 +74,12 @@ const list = computed(() => {
         关于徽章
       </div>
       <div class="mt-2 text-sm text-brand-800/80">
-        徽章是宠物养成的最高荣誉！当宠物达到满级后，继续获得成长值将触发“毕业仪式”获得一枚荣誉徽章。徽章越多，说明养成的宠物越多。
+        徽章是宠物养成的最高荣誉！当宠物达到满级后，继续获得成长值将触发"毕业仪式"获得一枚荣誉徽章。徽章越多，说明养成的宠物越多。
       </div>
     </div>
 
     <div class="mt-6 flex justify-end">
-      <button class="btn" @click="app.closeModal()">关闭</button>
+      <button class="btn" @click="handleClose">关闭</button>
     </div>
   </ModalBase>
 </template>
@@ -115,4 +122,3 @@ const list = computed(() => {
   @apply rounded-2xl px-4 py-2 text-sm border border-slate-200 bg-white hover:bg-slate-50 transition;
 }
 </style>
-

@@ -21,10 +21,6 @@ const menuItems = [
 
 const rightMenuItems = [
   { key: 'screen', label: '锁屏', icon: '🔒' },
-  { key: 'share', label: '分享家长', icon: '📤' },
-  { key: 'batch', label: '批量模式', icon: '👥' },
-  { key: 'all', label: '全班操作', icon: '👨‍‍' },
-  { key: 'custom', label: '自定义加分', icon: '⚙️' },
 ]
 
 function handleMenuClick(key: 'classroom' | 'leaderboard' | 'shop' | 'records' | 'settings' | 'classManager') {
@@ -33,24 +29,8 @@ function handleMenuClick(key: 'classroom' | 'leaderboard' | 'shop' | 'records' |
 
 function handleRightMenuClick(key: string) {
   switch (key) {
-    case 'batch':
-      app.ui.batchMode ? app.exitBatchMode() : app.enterBatchMode()
-      break
     case 'screen':
-      // TODO: 实现锁屏功能
       window.alert('锁屏功能待实现')
-      break
-    case 'share':
-      // TODO: 实现分享家长功能
-      window.alert('分享家长功能待实现')
-      break
-    case 'all':
-      // TODO: 实现全班操作功能
-      window.alert('全班操作功能待实现')
-      break
-    case 'custom':
-      // TODO: 实现自定义加分功能
-      window.alert('自定义加分功能待实现')
       break
   }
 }

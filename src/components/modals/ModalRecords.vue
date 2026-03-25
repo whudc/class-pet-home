@@ -3,14 +3,20 @@ import { computed } from 'vue'
 import { useAppStore } from '@/stores/app'
 import ModalBase from '@/components/modals/ModalBase.vue'
 
+defineProps<{ asView?: boolean }>()
+
 const app = useAppStore()
-const classroomId = computed(() => app.activeClassroom.id)
+const classroomId = computed(() => app.activeClassroom?.id ?? '')
 
-const records = computed(() => app.data.records.filter((r) => r.classroomId === classroomId.value).slice(0, 50))
+const records = computed(() => (app.data?.records ?? []).filter((r) => r.classroomId === classroomId.value).slice(0, 50))
 
-const studentName = (id: string) => app.activeClassroom.students.find((s) => s.id === id)?.name ?? '未知学生'
+const studentName = (id: string) => app.activeClassroom?.students?.find((s) => s.id === id)?.name ?? '未知学生'
 
 const fmt = (ts: number) => new Date(ts).toLocaleString('zh-CN')
+
+function handleClose() {
+  app.setActiveView('classroom')
+}
 
 function undo(id: string) {
   const res = app.undoScoreRecord(id)
@@ -50,7 +56,7 @@ function exportExcel() {
 </script>
 
 <template>
-  <ModalBase @close="app.closeModal()">
+  <ModalBase :as-view @close="handleClose">
     <template #title>
       🕘 评价记录（最近 50 条） <span class="chip-en">RECORDS</span>
       <button class="btn-head" :disabled="records.length === 0" @click="exportExcel">📄 导出 Excel</button>
@@ -79,7 +85,7 @@ function exportExcel() {
       </div>
 
       <div class="mt-6 flex justify-end">
-        <button class="btn" @click="app.closeModal()">关闭</button>
+        <button class="btn" @click="handleClose">关闭</button>
       </div>
     </div>
   </ModalBase>

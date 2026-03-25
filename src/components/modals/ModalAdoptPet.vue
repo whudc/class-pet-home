@@ -10,7 +10,7 @@ const targetIds = computed(() => app.ui.modalStudentIds.length ? app.ui.modalStu
 const isBatch = computed(() => targetIds.value.length > 1)
 const student = computed(() => {
   const c = app.activeClassroom
-  return c.students.find((x) => x.id === app.ui.modalStudentId)! // 单人展示用
+  return c?.students?.find((x) => x.id === app.ui.modalStudentId) // 单人展示用
 })
 
 const picked = ref(PETS[0])

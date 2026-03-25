@@ -3,10 +3,12 @@ import { computed, ref } from 'vue'
 import { useAppStore } from '@/stores/app'
 import ModalBase from '@/components/modals/ModalBase.vue'
 
+defineProps<{ asView?: boolean }>()
+
 const app = useAppStore()
 
 const active = computed(() => app.activeClassroom)
-const studentCount = computed(() => active.value.students.length)
+const studentCount = computed(() => active.value?.students?.length ?? 0)
 
 const showAdd = ref(false)
 const newStudentName = ref('')
@@ -22,11 +24,16 @@ const addingClass = ref(false)
 const editingClassId = ref<string | null>(null)
 const editClassName = ref('')
 
+function handleClose() {
+  app.setActiveView('classroom')
+}
+
 function addStudent() {
   formMsg.value = null
-  const before = active.value.students.length
+  const students = active.value?.students ?? []
+  const before = students.length
   app.addStudentToActiveClassroom(newStudentName.value, newStudentNumber.value)
-  const after = active.value.students.length
+  const after = students.length
   if (after === before) {
     formMsg.value = '添加失败：请检查姓名是否为空，学号是否为纯数字且不重复'
     return
@@ -50,6 +57,8 @@ function startImport() {
 }
 
 function setActive(id: string) {
+  // 如果正在编辑这个班级，不切换
+  if (editingClassId.value === id) return
   app.setActiveClassroom(id)
 }
 
@@ -58,6 +67,11 @@ function openEditClassroom(id: string) {
   if (!c) return
   editingClassId.value = id
   editClassName.value = c.name
+}
+
+// 双击班级名称进入编辑模式
+function onClassDblClick(id: string) {
+  openEditClassroom(id)
 }
 
 function cancelEditClassroom() {
@@ -86,7 +100,7 @@ function removeClassroom(id: string) {
 }
 
 const studentsSorted = computed(() => {
-  const list = [...active.value.students]
+  const list = [...(active.value?.students ?? [])]
   const num = (s: { number?: string }) => {
     const n = Number.parseInt(s.number ?? '', 10)
     return Number.isFinite(n) ? n : Number.POSITIVE_INFINITY
@@ -99,7 +113,7 @@ const editName = ref('')
 const editNumber = ref('')
 
 function openEdit(id: string) {
-  const s = active.value.students.find((x) => x.id === id)
+  const s = active.value?.students?.find((x) => x.id === id)
   if (!s) return
   editingId.value = id
   editName.value = s.name
@@ -124,7 +138,7 @@ function removeStudent(id: string) {
 </script>
 
 <template>
-  <ModalBase @close="app.closeModal()">
+  <ModalBase :as-view @close="handleClose">
     <template #title>🏫 班级与学生管理 <span class="chip-en">CLASS MANAGER</span></template>
 
     <div class="layout">
@@ -136,6 +150,7 @@ function removeStudent(id: string) {
           </div>
           <button v-if="!addingClass" class="icon-btn" title="新增班级" @click="addingClass = true">＋</button>
         </div>
+        <div class="text-xs text-slate-400 px-4 pb-2">双击名称可编辑</div>
 
         <div v-if="addingClass" class="px-3 pb-3">
           <input v-model="newClassName" class="w-full rounded-2xl border-slate-200 bg-white" placeholder="输入班级名称…" />
@@ -168,7 +183,7 @@ function removeStudent(id: string) {
             </template>
 
             <template v-else>
-              <div class="min-w-0">
+              <div class="min-w-0 class-name-area" @dblclick="onClassDblClick(c.id)">
                 <div class="font-semibold truncate">{{ c.name }}</div>
                 <div v-if="c.id === app.data.activeClassroomId" class="tag">当前使用</div>
               </div>
@@ -186,7 +201,7 @@ function removeStudent(id: string) {
       <section class="content">
         <div class="content-head">
           <div class="flex items-center gap-3">
-            <div class="text-2xl font-semibold">{{ active.name }}</div>
+            <div class="text-2xl font-semibold">{{ active?.name ?? '班级' }}</div>
             <div class="pill">{{ studentCount }} 位学生</div>
           </div>
 
@@ -322,6 +337,9 @@ function removeStudent(id: string) {
 }
 .class-input {
   @apply w-full rounded-2xl border-slate-200 bg-white/90 px-3 py-2 text-sm text-slate-900;
+}
+.class-name-area {
+  @apply min-w-0 cursor-text;
 }
 .tag {
   @apply mt-2 inline-flex text-xs rounded-full px-2 py-1 bg-white/20 text-white;

@@ -3,16 +3,16 @@ import { computed, ref } from 'vue'
 import { useAppStore } from '@/stores/app'
 import { petStageSrc } from '@/lib/pets'
 
-const props = defineProps<{ studentId: string }>()
+const props = defineProps<{ studentId: string; mini?: boolean }>()
 const app = useAppStore()
 
 const student = computed(() => {
   const c = app.activeClassroom
-  return c.students.find((x) => x.id === props.studentId)!
+  return c?.students?.find((x) => x.id === props.studentId)
 })
 
-const pet = computed(() => student.value.pet)
-const selected = computed(() => app.ui.selectedStudentIds.includes(student.value.id))
+const pet = computed(() => student.value?.pet)
+const selected = computed(() => student.value ? app.ui.selectedStudentIds.includes(student.value.id) : false)
 const selectable = computed(() => {
   if (!app.ui.batchMode) return true
   if (app.ui.batchAction === 'score') return !!pet.value
@@ -25,6 +25,7 @@ const progress = computed(() => {
 })
 
 const fx = computed(() => {
+  if (!student.value) return null
   const v = app.ui.scoreFx
   if (!v) return null
   if (v.studentId !== student.value.id) return null
@@ -61,7 +62,7 @@ function onTouchMove(e: TouchEvent) {
 }
 
 function onTouchEnd() {
-  if (!isSwiping.value || app.ui.batchMode) return
+  if (!isSwiping.value || app.ui.batchMode || !student.value) return
   isSwiping.value = false
 
   if (translateX.value < -40) {
@@ -76,6 +77,7 @@ function onTouchEnd() {
 }
 
 function onCardClick() {
+  if (!student.value) return
   if (app.ui.batchMode) {
     if (selectable.value) app.toggleSelectStudent(student.value.id)
     return
@@ -86,7 +88,38 @@ function onCardClick() {
 </script>
 
 <template>
+  <!-- 迷你模式 -->
   <div
+    v-if="student && mini"
+    class="rounded-xl bg-white border border-slate-100 shadow-sm overflow-hidden relative cursor-pointer hover:border-brand-200 transition"
+    :class="{ 'border-brand-300 ring-2 ring-brand-200': app.ui.batchMode && selected }"
+    @click="onCardClick"
+  >
+    <button
+      v-if="app.ui.batchMode"
+      class="check-mini"
+      :class="{ on: selected }"
+      :disabled="!selectable"
+      @click.stop="selectable ? app.toggleSelectStudent(student.id) : undefined"
+    >
+      <span v-if="selected">✓</span>
+    </button>
+
+    <div class="p-2">
+      <div class="flex items-center justify-between gap-1">
+        <div class="truncate text-sm font-medium">{{ student.name }}</div>
+        <div v-if="pet" class="text-xs text-brand-600">Lv.{{ pet.level }}</div>
+      </div>
+      <div class="text-xs text-slate-500 mt-1">
+        积分: {{ student.points }}
+        <span v-if="student.badges"> | 🏅{{ student.badges }}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 大图模式 -->
+  <div
+    v-else-if="student"
     ref="cardRef"
     class="rounded-3xl bg-white border shadow-soft overflow-hidden relative touch-pan-y"
     :class="
@@ -238,6 +271,15 @@ function onCardClick() {
 }
 .chip {
   @apply text-xs rounded-full bg-brand-100 text-brand-700 px-2 py-1;
+}
+.check-mini {
+  @apply absolute right-1 top-1 h-5 w-5 rounded-full border border-slate-200 bg-white grid place-items-center text-xs text-white;
+}
+.check-mini:disabled {
+  @apply opacity-40 cursor-not-allowed;
+}
+.check-mini.on {
+  @apply bg-brand-500 border-brand-500;
 }
 
 /* 滑动操作样式 */
