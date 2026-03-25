@@ -12,3 +12,10 @@ release/
 # Server
 server/node_modules
 server/dist
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+.env*
+!.env.example
