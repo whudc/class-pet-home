@@ -6,6 +6,11 @@
   color-scheme: light;
 }
 
+/* 全局响应式缩放：根据视口宽度调整根字体大小 */
+html {
+  font-size: clamp(12px, 0.8vw + 8px, 18px);
+}
+
 html,
 body {
   height: 100%;

@@ -14,6 +14,8 @@ import ModalClassManager from '@/components/modals/ModalClassManager.vue'
 import ModalShop from '@/components/modals/ModalShop.vue'
 import BatchBar from '@/components/BatchBar.vue'
 import LevelUpOverlay from '@/components/LevelUpOverlay.vue'
+import ModalAllClass from '@/components/modals/ModalAllClass.vue'
+import ModalCustomScore from '@/components/modals/ModalCustomScore.vue'
 
 const app = useAppStore()
 
@@ -28,6 +30,14 @@ function undoLatest() {
 function handleShareParent() {
   // TODO: 实现分享家长功能
   window.alert('分享家长功能待实现')
+}
+
+function handleAllClass() {
+  app.openModal('allClass')
+}
+
+function handleCustomScore() {
+  app.openModal('customScore')
 }
 
 onMounted(async () => {
@@ -52,7 +62,7 @@ watch(
 
     <!-- 移动端顶部栏 -->
     <header class="sm:hidden sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100 safe-top">
-      <div class="mx-auto max-w-6xl px-3 sm:px-4 pt-2 sm:pt-3 pb-2 flex items-center justify-between gap-3">
+      <div class="mx-auto max-w-7xl px-3 sm:px-4 pt-2 sm:pt-3 pb-2 flex items-center justify-between gap-3">
         <div class="flex items-center gap-2 sm:gap-3 min-w-0">
           <div class="h-9 w-9 sm:h-12 sm:w-12 rounded-2xl bg-brand-100 grid place-items-center shadow-soft flex-shrink-0">
             <span class="text-xl sm:text-2xl">🐾</span>
@@ -75,7 +85,7 @@ watch(
         </button>
       </div>
 
-      <div class="mx-auto max-w-6xl px-3 sm:px-4 pb-2 sm:pb-3 flex flex-col gap-2">
+      <div class="mx-auto max-w-7xl px-3 sm:px-4 pb-2 sm:pb-3 flex flex-col gap-2">
         <div class="w-full">
           <div class="relative">
             <input
@@ -104,7 +114,7 @@ watch(
     </header>
 
     <!-- 电脑端工具栏（仅班级主页显示） -->
-    <div v-if="app.activeView === 'classroom'" class="hidden sm:block mx-auto max-w-6xl px-3 sm:px-4 pt-20 pb-4">
+    <div v-if="app.activeView === 'classroom'" class="hidden sm:block mx-auto max-w-7xl px-3 sm:px-4 pt-20 pb-4">
       <div class="rounded-2xl bg-white border border-slate-200 p-4">
         <div class="flex items-center justify-between gap-4">
           <div class="flex items-center gap-3">
@@ -136,7 +146,7 @@ watch(
               @click="app.toggleCardViewMode()"
             >
               <span>{{ app.ui.cardViewMode === 'large' ? '🗖' : '🗗' }}</span>
-              <span class="text-xs">{{ app.ui.cardViewMode === 'large' ? '迷你模式' : '大图模式' }}</span>
+              <span>{{ app.ui.cardViewMode === 'large' ? '迷你模式' : '大图模式' }}</span>
             </button>
 
             <!-- 批量模式 -->
@@ -146,19 +156,31 @@ watch(
               @click="app.ui.batchMode ? app.exitBatchMode() : app.enterBatchMode()"
             >
               <span>👥</span>
-              <span class="text-xs">{{ app.ui.batchMode ? '退出批量' : '批量模式' }}</span>
+              <span>{{ app.ui.batchMode ? '退出批量' : '批量模式' }}</span>
+            </button>
+
+            <!-- 全班操作 -->
+            <button class="toolbar-btn" @click="handleAllClass">
+              <span>👨‍👩‍👧</span>
+              <span>全班操作</span>
+            </button>
+
+            <!-- 自定义加分 -->
+            <button class="toolbar-btn" @click="handleCustomScore">
+              <span>⚙️</span>
+              <span>自定义加分</span>
             </button>
 
             <!-- 分享家长 -->
             <button class="toolbar-btn" @click="handleShareParent">
               <span>📤</span>
-              <span class="text-xs">分享家长</span>
+              <span>分享家长</span>
             </button>
 
             <!-- 撤回 -->
             <button class="toolbar-btn" @click="undoLatest">
               <span>↩</span>
-              <span class="text-xs">撤回</span>
+              <span>撤回</span>
             </button>
           </div>
         </div>
@@ -166,7 +188,7 @@ watch(
     </div>
 
     <!-- 电脑端内容区域 -->
-    <main class="hidden sm:block mx-auto max-w-6xl px-3 sm:px-4 pb-8" :style="{ paddingTop: app.activeView === 'classroom' ? 0 : '70px' }">
+    <main class="hidden sm:block mx-auto max-w-7xl px-3 sm:px-4 pb-8" :style="{ paddingTop: app.activeView === 'classroom' ? 0 : '70px' }">
       <StudentGrid v-if="app.activeView === 'classroom'" :key="'classroom'" />
       <ModalLeaderboard v-else-if="app.activeView === 'leaderboard'" as-view :key="'leaderboard'" />
       <ModalShop v-else-if="app.activeView === 'shop'" as-view :key="'shop'" />
@@ -176,7 +198,7 @@ watch(
     </main>
 
     <!-- 移动端内容区域 -->
-    <main class="sm:hidden mx-auto max-w-6xl px-3 sm:px-4 py-4 sm:py-6" :style="{ paddingTop: app.activeView === 'classroom' ? 0 : '70px' }">
+    <main class="sm:hidden mx-auto max-w-7xl px-3 sm:px-4 py-4 sm:py-6" :style="{ paddingTop: app.activeView === 'classroom' ? 0 : '70px' }">
       <StudentGrid v-if="app.activeView === 'classroom'" :key="'classroom'" />
       <ModalLeaderboard v-else-if="app.activeView === 'leaderboard'" as-view :key="'leaderboard'" />
       <ModalShop v-else-if="app.activeView === 'shop'" as-view :key="'shop'" />
@@ -187,6 +209,8 @@ watch(
 
     <ModalAdoptPet v-if="app.ui.modal === 'adopt'" />
     <ModalScore v-if="app.ui.modal === 'score'" />
+    <ModalAllClass v-if="app.ui.modal === 'allClass'" />
+    <ModalCustomScore v-if="app.ui.modal === 'customScore'" />
 
     <BatchBar v-if="app.ui.batchMode" />
 
@@ -207,7 +231,7 @@ watch(
 
 /* 工具栏按钮 */
 .toolbar-btn {
-  @apply flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition cursor-pointer;
+  @apply flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition cursor-pointer text-sm;
 }
 .toolbar-btn.active {
   @apply bg-brand-50 border-brand-200 text-brand-600;

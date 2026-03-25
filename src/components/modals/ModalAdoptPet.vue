@@ -32,7 +32,7 @@ function adopt() {
     <template #title>
       ✨ 领养宠物 <span class="chip-en">ADOPT PET</span>
       <span class="text-slate-500 text-sm ml-2" v-if="isBatch">（批量）</span>
-      <span class="text-slate-500 text-sm ml-2" v-else>（{{ student.name }}）</span>
+      <span class="text-slate-500 text-sm ml-2" v-else-if="student">（{{ student.name }}）</span>
     </template>
 
     <div class="modal-col">
@@ -62,7 +62,7 @@ function adopt() {
         </div>
       </div>
 
-      <div class="mt-6 flex justify-end gap-2">
+      <div class="modal-footer">
         <button class="btn" @click="app.closeModal()">取消</button>
         <button class="btn-primary" @click="adopt">{{ isBatch ? '批量领养' : '确认领养' }}</button>
       </div>
@@ -75,7 +75,10 @@ function adopt() {
   @apply h-full flex flex-col min-h-0;
 }
 .modal-scroll {
-  @apply flex-1 min-h-0 overflow-auto;
+  @apply flex-1 min-h-0 overflow-y-auto max-h-[50vh];
+}
+.modal-footer {
+  @apply mt-4 pt-4 border-t border-slate-100 flex justify-end gap-2 flex-shrink-0;
 }
 .pet-card {
   @apply rounded-2xl border border-slate-200 bg-white p-4 text-left hover:border-brand-300 hover:bg-brand-50 transition;

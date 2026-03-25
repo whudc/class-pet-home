@@ -105,14 +105,23 @@ function onCardClick() {
       <span v-if="selected">✓</span>
     </button>
 
-    <div class="p-2">
-      <div class="flex items-center justify-between gap-1">
-        <div class="truncate text-sm font-medium">{{ student.name }}</div>
-        <div v-if="pet" class="text-xs text-brand-600">Lv.{{ pet.level }}</div>
-      </div>
-      <div class="text-xs text-slate-500 mt-1">
-        积分: {{ student.points }}
-        <span v-if="student.badges"> | 🏅{{ student.badges }}</span>
+    <!-- 宠物图片 -->
+    <div class="mini-pet-area">
+      <img
+        v-if="pet"
+        :src="petStageSrc(pet.petId, pet.level)"
+        class="mini-pet-img"
+        :alt="pet.name"
+      />
+      <div v-else class="mini-no-pet">🥚</div>
+    </div>
+
+    <!-- 信息 -->
+    <div class="p-1 text-center">
+      <div class="truncate" style="font-size: clamp(10px, 1.5vw, 14px);">{{ student.name }}</div>
+      <div style="font-size: clamp(8px, 1.2vw, 12px);" class="text-slate-500">
+        <span v-if="pet">Lv.{{ pet.level }}</span>
+        <span v-else>未领养</span>
       </div>
     </div>
   </div>
@@ -280,6 +289,20 @@ function onCardClick() {
 }
 .check-mini.on {
   @apply bg-brand-500 border-brand-500;
+}
+
+/* 迷你模式样式 */
+.mini-pet-area {
+  @apply bg-gradient-to-br from-brand-50 to-white grid place-items-center;
+  height: clamp(40px, 8vw, 80px);
+}
+.mini-pet-img {
+  @apply object-contain;
+  height: clamp(32px, 6vw, 64px);
+  width: clamp(32px, 6vw, 64px);
+}
+.mini-no-pet {
+  font-size: clamp(16px, 3vw, 28px);
 }
 
 /* 滑动操作样式 */

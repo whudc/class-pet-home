@@ -74,17 +74,6 @@ function handleUpdates() {
 
       <!-- 右侧：操作区 -->
       <div class="header-right">
-        <!-- 搜索框 -->
-        <div class="search-box">
-          <input
-            v-model="app.ui.query"
-            type="text"
-            placeholder="搜索学生..."
-            class="search-input"
-          />
-          <span class="search-icon">🔎</span>
-        </div>
-
         <!-- 右侧菜单按钮 -->
         <div class="right-actions">
           <button
@@ -221,38 +210,7 @@ function handleUpdates() {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-width: 280px;
   justify-content: flex-end;
-}
-
-.search-box {
-  position: relative;
-}
-
-.search-input {
-  width: 180px;
-  padding: 5px 12px 5px 30px;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  font-size: 13px;
-  background: #f9fafb;
-  transition: all 0.2s;
-}
-
-.search-input:focus {
-  outline: none;
-  background: #ffffff;
-  border-color: #fdba74;
-  box-shadow: 0 0 0 2px rgba(251, 146, 60, 0.1);
-}
-
-.search-icon {
-  position: absolute;
-  left: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 12px;
-  opacity: 0.5;
 }
 
 .right-actions {
@@ -321,10 +279,6 @@ function handleUpdates() {
 
   .right-action-text {
     display: none;
-  }
-
-  .search-input {
-    width: 140px;
   }
 }
 </style>

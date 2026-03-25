@@ -130,7 +130,7 @@ export const useAppStore = defineStore('app', {
       ui: {
         query: '',
         sortMode: 'name' as SortMode,
-        modal: null as null | 'adopt' | 'score' | 'settings' | 'leaderboard' | 'records' | 'classManager' | 'shop',
+        modal: null as null | 'adopt' | 'score' | 'settings' | 'leaderboard' | 'records' | 'classManager' | 'shop' | 'allClass' | 'customScore',
         modalStudentId: null as null | string,
         modalStudentIds: [] as string[],
         modalCategory: '学习' as ScoreCategory,

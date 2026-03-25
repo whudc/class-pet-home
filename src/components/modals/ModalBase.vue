@@ -28,7 +28,7 @@ onMounted(() => {
   window.addEventListener('resize', handleResize)
   handleResize()
 
-  if (app.isMobileView && !props.asView) {
+  if (!props.asView) {
     document.body.style.overflow = 'hidden'
     document.documentElement.style.overflow = 'hidden'
   }
@@ -111,8 +111,8 @@ function onTouchEnd() {
     </div>
 
     <!-- 电脑端 modal -->
-    <div v-else class="desktop-modal">
-      <div class="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+    <div v-else class="desktop-modal-overlay" @click.self="emit('close')">
+      <div class="modal-container" @click.stop>
         <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <div class="font-semibold text-slate-900 text-base">
             <slot name="title" />
@@ -121,7 +121,7 @@ function onTouchEnd() {
             ✕
           </button>
         </div>
-        <div class="p-6">
+        <div class="modal-body">
           <slot />
         </div>
       </div>
@@ -138,7 +138,16 @@ function onTouchEnd() {
   @apply w-full;
 }
 
-.desktop-modal {
-  /* 容器样式由内部元素处理 */
+.desktop-modal-overlay {
+  @apply fixed inset-0 z-50 flex items-center justify-center p-4;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.modal-container {
+  @apply max-w-4xl w-full bg-white rounded-2xl border border-slate-200 shadow-lg overflow-hidden flex flex-col max-h-[80vh];
+}
+
+.modal-body {
+  @apply p-6 flex-1 min-h-0 overflow-y-auto;
 }
 </style>
