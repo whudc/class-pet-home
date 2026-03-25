@@ -6,8 +6,11 @@ import fs from 'fs'
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
+// Railway 上使用 /tmp 目录（唯一可写位置），本地开发使用 .data 目录
+const isProduction = process.env.NODE_ENV === 'production' || process.env.RAILWAY_ENVIRONMENT !== undefined
+const dataDir = isProduction ? '/tmp' : join(__dirname, '../../.data')
+
 // 确保数据目录存在
-const dataDir = join(__dirname, '../../.data')
 if (!fs.existsSync(dataDir)) {
   fs.mkdirSync(dataDir, { recursive: true })
 }
