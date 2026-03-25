@@ -1,6 +1,7 @@
-<script setup lang="ts">
+<script setup lang=”ts”>
 import { computed, onMounted, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
+import DesktopHeader from '@/components/DesktopHeader.vue'
 
 import StudentGrid from '@/components/StudentGrid.vue'
 import ModalAdoptPet from '@/components/modals/ModalAdoptPet.vue'
@@ -32,7 +33,7 @@ onMounted(async () => {
 watch(
   () => app.ui.autoBackupEnabled,
   async (v) => {
-    // 关闭时不销毁循环（避免多处组件重复启动），但允许你需要“彻底停止”时调用 stopAutoBackupLoop
+    // 关闭时不销毁循环（避免多处组件重复启动），但允许你需要”彻底停止”时调用 stopAutoBackupLoop
     if (v) {
       await app.refreshAutoBackupTarget()
       if (app.ui.autoBackupHasTarget) await app.runAutoBackupOnce()
@@ -42,8 +43,12 @@ watch(
 </script>
 
 <template>
-  <div class="min-h-screen bg-gradient-to-b from-white to-slate-50 safe-top">
-    <header class="sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100 safe-top">
+  <div class="min-h-screen bg-gradient-to-b from-white to-slate-50">
+    <!-- 电脑端顶部导航栏 -->
+    <DesktopHeader />
+
+    <!-- 移动端顶部栏 -->
+    <header class="sm:hidden sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100 safe-top">
       <div class="mx-auto max-w-6xl px-3 sm:px-4 pt-2 sm:pt-3 pb-2 flex items-center justify-between gap-3">
         <div class="flex items-center gap-2 sm:gap-3 min-w-0">
           <div class="h-9 w-9 sm:h-12 sm:w-12 rounded-2xl bg-brand-100 grid place-items-center shadow-soft flex-shrink-0">
@@ -61,7 +66,7 @@ watch(
           </div>
         </div>
 
-        <button class="btn-ghost flex-shrink-0 sm:block hidden" @click="app.openModal('settings')">
+        <button class="btn-ghost flex-shrink-0" @click="app.openModal('settings')">
           <span class="mr-1 sm:mr-2">⚙️</span>
           <span class="hidden sm:inline">设置与帮助</span>
         </button>
@@ -84,51 +89,24 @@ watch(
 
         <div class="flex flex-wrap justify-start sm:justify-end gap-1.5 sm:gap-2">
           <SortMenu />
-          <button class="btn sm:block hidden" @click="app.openModal('leaderboard')">🏆<span class="hidden xs:inline">排行榜</span></button>
-          <button class="btn sm:block hidden" @click="app.openModal('shop')">🛍<span class="hidden xs:inline">小商店</span></button>
-          <button class="btn sm:block hidden" @click="app.openModal('records')">🕘<span class="hidden xs:inline">记录</span></button>
-          <button class="btn sm:block hidden" @click="undoLatest">↩<span class="hidden xs:inline">撤回</span></button>
-          <button class="btn-primary sm:min-w-[100px] sm:block hidden" @click="app.ui.batchMode ? app.exitBatchMode() : app.enterBatchMode()">
+          <button class="btn" @click="app.openModal('leaderboard')">🏆<span class="hidden xs:inline">排行榜</span></button>
+          <button class="btn" @click="app.openModal('shop')">🛍<span class="hidden xs:inline">小商店</span></button>
+          <button class="btn" @click="app.openModal('records')">🕘<span class="hidden xs:inline">记录</span></button>
+          <button class="btn" @click="undoLatest">↩<span class="hidden xs:inline">撤回</span></button>
+          <button class="btn-primary sm:min-w-[100px]" @click="app.ui.batchMode ? app.exitBatchMode() : app.enterBatchMode()">
             {{ app.ui.batchMode ? '退出批量' : '批量操作' }}
           </button>
         </div>
       </div>
     </header>
 
-    <!-- 移动端底部导航栏 -->
-    <nav class="sm:hidden fixed bottom-0 left-0 right-0 z-40 safe-bottom border-t border-slate-200 bg-white/95 backdrop-blur">
-      <div class="mx-auto max-w-6xl px-2">
-        <div class="grid grid-cols-5 gap-1">
-          <button class="nav-item touch-feedback" @click="app.openModal('leaderboard')">
-            <span class="nav-icon">🏆</span>
-            <span class="nav-label">排行</span>
-          </button>
-          <button class="nav-item touch-feedback" @click="app.openModal('shop')">
-            <span class="nav-icon">🛍</span>
-            <span class="nav-label">商店</span>
-          </button>
-          <button class="nav-item nav-action touch-feedback" @click="app.ui.batchMode ? app.exitBatchMode() : app.enterBatchMode()">
-            <span class="nav-icon nav-action-icon">{{ app.ui.batchMode ? '✕' : '👥' }}</span>
-            <span class="nav-label">{{ app.ui.batchMode ? '退出' : '批量' }}</span>
-          </button>
-          <button class="nav-item touch-feedback" @click="app.openModal('records')">
-            <span class="nav-icon">🕘</span>
-            <span class="nav-label">记录</span>
-          </button>
-          <button class="nav-item touch-feedback" @click="undoLatest">
-            <span class="nav-icon">↩</span>
-            <span class="nav-label">撤回</span>
-          </button>
-        </div>
-      </div>
-    </nav>
+    <!-- 电脑端内容区域（带顶部边距） -->
+    <main class="hidden sm:block mx-auto max-w-6xl px-3 sm:px-4 py-4 pt-20">
+      <StudentGrid />
+    </main>
 
-    <!-- 移动端设置按钮（浮动） -->
-    <button class="sm:hidden fixed bottom-20 right-3 z-40 h-12 w-12 rounded-full bg-white border border-slate-200 shadow-lg grid place-items-center" @click="app.openModal('settings')">
-      <span class="text-xl">⚙️</span>
-    </button>
-
-    <main class="mx-auto max-w-6xl px-3 sm:px-4 py-4 sm:py-6">
+    <!-- 移动端内容区域 -->
+    <main class="sm:hidden mx-auto max-w-6xl px-3 sm:px-4 py-4 sm:py-6">
       <StudentGrid />
     </main>
 
