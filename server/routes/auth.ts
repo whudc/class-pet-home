@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import bcrypt from 'bcryptjs'
 import jwt from 'jsonwebtoken'
-import { getDatabase } from '../database/index.js'
+import { getDatabase, saveDatabase } from '../database/index.js'
 
 const router = Router()
 const JWT_SECRET = process.env.JWT_SECRET || 'class-pet-home-secret-key-change-in-production'

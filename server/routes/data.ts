@@ -1,5 +1,5 @@
 import { Router, Request } from 'express'
-import { getDatabase, initDatabase } from '../database/index.js'
+import { getDatabase, initDatabase, saveDatabase } from '../database/index.js'
 import { authMiddleware } from './auth.js'
 
 const router = Router()
