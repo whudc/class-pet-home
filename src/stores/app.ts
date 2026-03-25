@@ -134,6 +134,8 @@ export const useAppStore = defineStore('app', {
       autoBackupLastOkAt: null as null | number,
       autoBackupLastError: null as null | string,
     },
+    activeView: 'classroom' as 'classroom' | 'leaderboard' | 'shop' | 'records' | 'settings' | 'classManager',
+    isMobileView: false as boolean,
   }),
   getters: {
     activeClassroom(state): Classroom {
@@ -177,6 +179,12 @@ export const useAppStore = defineStore('app', {
     },
   },
   actions: {
+    initMobileView() {
+      this.isMobileView = window.innerWidth <= 640
+      window.addEventListener('resize', () => {
+        this.isMobileView = window.innerWidth <= 640
+      })
+    },
     // 计算升级到下一级所需的经验
     expNeed(level: number): number {
       const thresholds = this.data.growth.thresholds
@@ -417,6 +425,18 @@ export const useAppStore = defineStore('app', {
       this.ui.modal = null
       this.ui.modalStudentId = null
       this.ui.modalStudentIds = []
+    },
+    setActiveView(view: 'classroom' | 'leaderboard' | 'shop' | 'records' | 'settings' | 'classManager') {
+      // 如果点击当前激活的视图，不做任何事
+      if (this.activeView === view) return
+
+      this.activeView = view
+      // 关闭之前的模态框
+      this.ui.modal = null
+      // 打开新视图对应的模态框
+      if (view !== 'classroom') {
+        this.openModal(view as any)
+      }
     },
     enterBatchMode() {
       this.ui.batchMode = true

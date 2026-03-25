@@ -62,7 +62,7 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocClick))
 
 <style scoped>
 .btn {
-  @apply rounded-2xl px-4 py-2 text-sm border border-slate-200 bg-white/80 hover:bg-white transition flex items-center;
+  @apply rounded-lg px-3 py-1.5 text-sm border border-slate-200 bg-white hover:bg-slate-50 transition flex items-center gap-2;
 }
 .item {
   @apply w-full px-3 py-2 text-sm flex items-center gap-2 hover:bg-slate-50 transition;

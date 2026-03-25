@@ -1,4 +1,4 @@
-<script setup lang=”ts”>
+<script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
 import DesktopHeader from '@/components/DesktopHeader.vue'
@@ -26,14 +26,12 @@ function undoLatest() {
 }
 
 onMounted(async () => {
-  // 自动备份循环只初始化一次；开关控制是否真正执行写入
   await app.startAutoBackupLoop()
 })
 
 watch(
   () => app.ui.autoBackupEnabled,
   async (v) => {
-    // 关闭时不销毁循环（避免多处组件重复启动），但允许你需要”彻底停止”时调用 stopAutoBackupLoop
     if (v) {
       await app.refreshAutoBackupTarget()
       if (app.ui.autoBackupHasTarget) await app.runAutoBackupOnce()
@@ -100,8 +98,60 @@ watch(
       </div>
     </header>
 
-    <!-- 电脑端内容区域（带顶部边距） -->
-    <main class="hidden sm:block mx-auto max-w-6xl px-3 sm:px-4 py-4 pt-20">
+    <!-- 电脑端工具栏 -->
+    <div class="hidden sm:block mx-auto max-w-6xl px-3 sm:px-4 pt-20 pb-4">
+      <div class="rounded-2xl bg-white border border-slate-200 p-4">
+        <div class="flex items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div>
+              <h2 class="text-base font-semibold text-slate-900">学生卡片</h2>
+              <p class="text-xs text-slate-500">管理学生积分与详情</p>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <!-- 搜索框 -->
+            <div class="relative">
+              <input
+                v-model="app.ui.query"
+                class="w-48 rounded-lg border-slate-200 bg-slate-50 pl-9 pr-4 py-1.5 text-sm focus:bg-white focus:border-brand-300 focus:ring-2 focus:ring-brand-100 transition"
+                placeholder="搜索学生..."
+                type="search"
+              />
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm">🔎</span>
+            </div>
+
+            <!-- 排序 -->
+            <SortMenu />
+
+            <!-- 视图切换 -->
+            <button class="toolbar-btn">
+              <span>👤</span>
+              <span class="text-xs">个人</span>
+            </button>
+
+            <!-- 批量模式 -->
+            <button
+              class="toolbar-btn"
+              :class="{ active: app.ui.batchMode }"
+              @click="app.ui.batchMode ? app.exitBatchMode() : app.enterBatchMode()"
+            >
+              <span>👥</span>
+              <span class="text-xs">{{ app.ui.batchMode ? '退出批量' : '批量模式' }}</span>
+            </button>
+
+            <!-- 撤回 -->
+            <button class="toolbar-btn" @click="undoLatest">
+              <span>↩</span>
+              <span class="text-xs">撤回</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 电脑端内容区域 -->
+    <main class="hidden sm:block mx-auto max-w-6xl px-3 sm:px-4 pb-8">
       <StudentGrid />
     </main>
 
@@ -112,11 +162,11 @@ watch(
 
     <ModalAdoptPet v-if="app.ui.modal === 'adopt'" />
     <ModalScore v-if="app.ui.modal === 'score'" />
-    <ModalSettings v-if="app.ui.modal === 'settings'" />
-    <ModalLeaderboard v-if="app.ui.modal === 'leaderboard'" />
-    <ModalRecords v-if="app.ui.modal === 'records'" />
-    <ModalClassManager v-if="app.ui.modal === 'classManager'" />
-    <ModalShop v-if="app.ui.modal === 'shop'" />
+    <ModalSettings v-if="app.activeView === 'settings' || app.ui.modal === 'settings'" />
+    <ModalLeaderboard v-if="app.activeView === 'leaderboard' || app.ui.modal === 'leaderboard'" />
+    <ModalRecords v-if="app.activeView === 'records' || app.ui.modal === 'records'" />
+    <ModalClassManager v-if="app.activeView === 'classManager' || app.ui.modal === 'classManager'" />
+    <ModalShop v-if="app.activeView === 'shop' || app.ui.modal === 'shop'" />
 
     <BatchBar v-if="app.ui.batchMode" />
 
@@ -135,6 +185,14 @@ watch(
   @apply rounded-2xl px-4 py-2 text-sm border border-slate-200 bg-white/60 hover:bg-white transition;
 }
 
+/* 工具栏按钮 */
+.toolbar-btn {
+  @apply flex flex-col items-center gap-0.5 px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 transition cursor-pointer;
+}
+.toolbar-btn.active {
+  @apply bg-brand-50 border-brand-200 text-brand-600;
+}
+
 /* 移动端底部导航栏样式 */
 .nav-item {
   @apply flex flex-col items-center justify-center py-2 text-xs text-slate-600 rounded-xl transition active:bg-slate-100;
@@ -149,4 +207,3 @@ watch(
   @apply text-[10px] leading-none;
 }
 </style>
-

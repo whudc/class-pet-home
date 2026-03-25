@@ -8,29 +8,50 @@ const app = useAppStore()
 
 const activeName = computed(() => app.activeClassroom?.name ?? '')
 const username = computed(() => auth.currentUser?.username ?? '')
+const activeView = computed(() => app.activeView)
 
 const menuItems = [
-  { key: 'classroom', label: '班级主页', labelEn: 'Home', icon: '🏠' },
-  { key: 'leaderboard', label: '光荣榜', labelEn: 'Leaderboard', icon: '🏆' },
-  { key: 'shop', label: '小卖部', labelEn: 'Shop', icon: '🛍' },
-  { key: 'records', label: '成长记录', labelEn: 'Records', icon: '📈' },
-  { key: 'settings', label: '老师设置', labelEn: 'Settings', icon: '⚙️' },
-  { key: 'classManager', label: '班级管理', labelEn: 'Classes', icon: '👥' },
+  { key: 'classroom', label: '班级主页' },
+  { key: 'leaderboard', label: '光荣榜' },
+  { key: 'shop', label: '小卖部' },
+  { key: 'records', label: '成长记录' },
+  { key: 'settings', label: '老师设置' },
+  { key: 'classManager', label: '班级管理' },
 ]
 
-function handleMenuClick(key: string) {
-  const modalMap: Record<string, string> = {
-    classroom: '',
-    leaderboard: 'leaderboard',
-    shop: 'shop',
-    records: 'records',
-    settings: 'settings',
-    classManager: 'classManager',
-  }
+const rightMenuItems = [
+  { key: 'screen', label: '锁屏', icon: '🔒' },
+  { key: 'share', label: '分享家长', icon: '📤' },
+  { key: 'batch', label: '批量模式', icon: '👥' },
+  { key: 'all', label: '全班操作', icon: '👨‍‍' },
+  { key: 'custom', label: '自定义加分', icon: '⚙️' },
+]
 
-  const modalName = modalMap[key]
-  if (modalName) {
-    app.openModal(modalName as any)
+function handleMenuClick(key: 'classroom' | 'leaderboard' | 'shop' | 'records' | 'settings' | 'classManager') {
+  app.setActiveView(key)
+}
+
+function handleRightMenuClick(key: string) {
+  switch (key) {
+    case 'batch':
+      app.ui.batchMode ? app.exitBatchMode() : app.enterBatchMode()
+      break
+    case 'screen':
+      // TODO: 实现锁屏功能
+      window.alert('锁屏功能待实现')
+      break
+    case 'share':
+      // TODO: 实现分享家长功能
+      window.alert('分享家长功能待实现')
+      break
+    case 'all':
+      // TODO: 实现全班操作功能
+      window.alert('全班操作功能待实现')
+      break
+    case 'custom':
+      // TODO: 实现自定义加分功能
+      window.alert('自定义加分功能待实现')
+      break
   }
 }
 
@@ -46,54 +67,64 @@ function handleUpdates() {
 <template>
   <header class="desktop-header">
     <div class="header-container">
-      <!-- 左侧：软件介绍 -->
-      <div class="header-section header-left">
-        <div class="logo-container">
+      <!-- 左侧：Logo + 班级名称 -->
+      <div class="header-left">
+        <div class="logo-wrapper">
           <div class="logo-icon">🐾</div>
-          <div class="logo-text">
-            <div class="logo-title">班级宠物园</div>
-            <div class="logo-subtitle">Class Pet Home</div>
-          </div>
+          <span class="logo-text">班级宠物园</span>
+        </div>
+        <div class="class-selector" @click="app.openModal('classManager')">
+          <span class="class-name">{{ activeName }}</span>
+          <span class="dropdown-arrow">▾</span>
         </div>
       </div>
 
       <!-- 中间：导航菜单 -->
-      <nav class="header-section header-center">
+      <nav class="header-center">
         <button
           v-for="item in menuItems"
           :key="item.key"
           class="nav-item"
-          :class="{ active: item.key === 'classroom' }"
-          @click="handleMenuClick(item.key)"
+          :class="{ active: activeView === item.key }"
+          @click="handleMenuClick(item.key as any)"
         >
-          <span class="nav-icon">{{ item.icon }}</span>
-          <span class="nav-text">
-            <span class="nav-text-cn">{{ item.label }}</span>
-            <span class="nav-text-en">{{ item.labelEn }}</span>
-          </span>
+          {{ item.label }}
         </button>
       </nav>
 
-      <!-- 右侧：用户信息 -->
-      <div class="header-section header-right">
-        <div class="class-info">
-          <span class="class-label">班级：</span>
-          <span class="class-name">{{ activeName }}</span>
+      <!-- 右侧：操作区 -->
+      <div class="header-right">
+        <!-- 搜索框 -->
+        <div class="search-box">
+          <input
+            v-model="app.ui.query"
+            type="text"
+            placeholder="搜索学生..."
+            class="search-input"
+          />
+          <span class="search-icon">🔎</span>
         </div>
 
-        <div class="user-info">
-          <div class="user-avatar">👤</div>
-          <span class="user-name">{{ username }}</span>
+        <!-- 右侧菜单按钮 -->
+        <div class="right-actions">
+          <button
+            v-for="item in rightMenuItems"
+            :key="item.key"
+            class="right-action-btn"
+            :title="item.label"
+            @click="handleRightMenuClick(item.key)"
+          >
+            <span>{{ item.icon }}</span>
+            <span class="right-action-text">{{ item.label }}</span>
+          </button>
         </div>
 
         <div class="header-actions">
           <button class="action-btn" @click="handleHelp">
-            <span>❓</span>
-            <span class="action-text">帮助</span>
+            <span class="action-text">帮助中心</span>
           </button>
           <button class="action-btn" @click="handleUpdates">
-            <span>📝</span>
-            <span class="action-text">更新</span>
+            <span class="action-text">更新日志</span>
           </button>
         </div>
       </div>
@@ -107,9 +138,10 @@ function handleUpdates() {
   top: 0;
   left: 0;
   right: 0;
-  height: 72px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  height: 56px;
+  background: #ffffff;
+  border-bottom: 1px solid #f0f0f3;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   z-index: 100;
 }
 
@@ -120,154 +152,156 @@ function handleUpdates() {
   height: 100%;
   max-width: 1600px;
   margin: 0 auto;
-  padding: 0 24px;
-  gap: 32px;
-}
-
-.header-section {
-  display: flex;
-  align-items: center;
+  padding: 0 16px;
+  gap: 16px;
 }
 
 .header-left {
-  min-width: 200px;
-}
-
-.logo-container {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 200px;
+}
+
+.logo-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #f97316;
 }
 
 .logo-icon {
-  font-size: 36px;
-  line-height: 1;
+  font-size: 24px;
 }
 
 .logo-text {
+  white-space: nowrap;
+}
+
+.class-selector {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  background: #fffcf9;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #fed7aa;
 }
 
-.logo-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: white;
-  white-space: nowrap;
+.class-selector:hover {
+  background: #ffedd5;
 }
 
-.logo-subtitle {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
-  white-space: nowrap;
+.class-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.dropdown-arrow {
+  font-size: 11px;
+  color: #9ca3af;
 }
 
 .header-center {
+  display: flex;
+  align-items: center;
+  gap: 4px;
   flex: 1;
   justify-content: center;
 }
 
 .nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 8px 16px;
-  margin: 0 4px;
+  padding: 6px 12px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  background: transparent;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  color: white;
+  transition: all 0.2s;
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
+  background: #fff7ed;
+  color: #c2410c;
 }
 
 .nav-item.active {
-  background: rgba(255, 255, 255, 0.25);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.nav-icon {
-  font-size: 20px;
-  margin-bottom: 4px;
-}
-
-.nav-text {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.nav-text-cn {
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-}
-
-.nav-text-en {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.7);
-  white-space: nowrap;
+  color: #c2410c;
+  background: #ffedd5;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 12px;
   min-width: 280px;
   justify-content: flex-end;
 }
 
-.class-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+.search-box {
+  position: relative;
 }
 
-.class-label {
+.search-input {
+  width: 180px;
+  padding: 5px 12px 5px 30px;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  font-size: 13px;
+  background: #f9fafb;
+  transition: all 0.2s;
+}
+
+.search-input:focus {
+  outline: none;
+  background: #ffffff;
+  border-color: #fdba74;
+  box-shadow: 0 0 0 2px rgba(251, 146, 60, 0.1);
+}
+
+.search-icon {
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   font-size: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  opacity: 0.5;
 }
 
-.class-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-  max-width: 150px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.user-info {
+.right-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
+  gap: 4px;
 }
 
-.user-avatar {
-  font-size: 18px;
+.right-action-btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 8px;
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: #6b7280;
+  font-size: 12px;
 }
 
-.user-name {
-  font-size: 14px;
-  font-weight: 500;
-  color: white;
-  max-width: 100px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+.right-action-btn:hover {
+  background: #f9fafb;
+  border-color: #d1d5db;
+}
+
+.right-action-text {
+  font-size: 11px;
 }
 
 .header-actions {
@@ -277,64 +311,40 @@ function handleUpdates() {
 
 .action-btn {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  padding: 6px 12px;
+  gap: 4px;
+  padding: 5px 10px;
   border: none;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  background: transparent;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  color: white;
+  transition: all 0.2s;
+  color: #6b7280;
+  font-size: 12px;
 }
 
 .action-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-1px);
+  background: #f3f4f6;
+  color: #111827;
 }
 
-.action-btn span:first-child {
-  font-size: 16px;
-}
-
-.action-text {
-  font-size: 10px;
-  color: rgba(255, 255, 255, 0.8);
-  margin-top: 2px;
-}
-
-/* 隐藏滚动条 */
 @media (max-width: 1200px) {
   .header-container {
-    padding: 0 16px;
-    gap: 16px;
+    padding: 0 12px;
+    gap: 12px;
   }
 
   .nav-item {
-    padding: 6px 10px;
-    margin: 0 2px;
+    padding: 5px 10px;
+    font-size: 13px;
   }
 
-  .nav-text-cn {
-    font-size: 12px;
+  .right-action-text {
+    display: none;
   }
 
-  .nav-text-en {
-    font-size: 9px;
-  }
-
-  .header-right {
-    gap: 12px;
-    min-width: auto;
-  }
-
-  .class-info,
-  .user-info {
-    padding: 6px 12px;
-  }
-
-  .action-btn {
-    padding: 4px 8px;
+  .search-input {
+    width: 140px;
   }
 }
 </style>

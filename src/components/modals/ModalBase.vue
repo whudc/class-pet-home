@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useAppStore } from '@/stores/app'
 
 const emit = defineEmits<{ close: [] }>()
+const app = useAppStore()
+
+const isDesktopView = computed(() => !app.isMobileView)
 
 let prevBodyOverflow = ''
 let prevHtmlOverflow = ''
@@ -12,17 +16,37 @@ const currentY = ref(0)
 const isDragging = ref(false)
 const translateY = ref(0)
 
+function handleResize() {
+  // 640px 是 sm 断点
+  app.isMobileView = window.innerWidth <= 640
+}
+
 onMounted(() => {
   prevBodyOverflow = document.body.style.overflow
   prevHtmlOverflow = document.documentElement.style.overflow
-  document.body.style.overflow = 'hidden'
-  document.documentElement.style.overflow = 'hidden'
+  window.addEventListener('resize', handleResize)
+  handleResize()
+
+  // 只在移动端禁用滚动
+  if (app.isMobileView) {
+    document.body.style.overflow = 'hidden'
+    document.documentElement.style.overflow = 'hidden'
+  }
 })
 
 onBeforeUnmount(() => {
   document.body.style.overflow = prevBodyOverflow
   document.documentElement.style.overflow = prevHtmlOverflow
+  window.removeEventListener('resize', handleResize)
 })
+
+function onClose() {
+  if (app.isMobileView) {
+    emit('close')
+  } else {
+    app.setActiveView('classroom')
+  }
+}
 
 function onTouchStart(e: TouchEvent) {
   if ((e.target as HTMLElement).closest('.no-swipe-close')) return
@@ -53,7 +77,8 @@ function onTouchEnd() {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 overscroll-contain safe-top safe-bottom">
+  <!-- 移动端：模态框形式 -->
+  <div v-if="app.isMobileView" class="fixed inset-0 z-50 overscroll-contain safe-top safe-bottom">
     <div class="absolute inset-0 bg-black/30 z-0" @click="emit('close')"></div>
     <div
       class="absolute inset-0 p-0 sm:p-4 flex items-stretch justify-center z-10"
@@ -70,7 +95,7 @@ function onTouchEnd() {
           <div class="font-semibold text-slate-900 text-sm sm:text-base">
             <slot name="title" />
           </div>
-          <button class="text-slate-400 hover:text-slate-700 p-2 touch-manipulation" @click="emit('close')">✕</button>
+          <button class="text-slate-400 hover:text-slate-700 p-2 touch-manipulation" @click="onClose()">✕</button>
         </div>
         <!-- 移动端下滑提示条 -->
         <div class="sm:hidden flex justify-center pt-2 pb-1">
@@ -79,6 +104,23 @@ function onTouchEnd() {
         <div class="p-3 sm:p-6 flex-1 min-h-0 overflow-y-auto overscroll-contain no-swipe-close">
           <slot />
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 电脑端：直接显示内容 -->
+  <div v-else class="desktop-view-content">
+    <div class="max-w-4xl mx-auto bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <div class="font-semibold text-slate-900 text-base">
+          <slot name="title" />
+        </div>
+        <button class="text-slate-400 hover:text-slate-700 p-2" @click="app.setActiveView('classroom')">
+          ✕
+        </button>
+      </div>
+      <div class="p-6">
+        <slot />
       </div>
     </div>
   </div>

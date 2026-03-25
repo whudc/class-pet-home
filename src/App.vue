@@ -12,6 +12,7 @@ const isLoggedIn = computed(() => auth.isAuthenticated)
 
 onMounted(() => {
   auth.initAuth()
+  app.initMobileView()
 })
 
 // 监听登录状态，登录后启用云端同步
