@@ -14,11 +14,11 @@ function scoreBatch() {
 </script>
 
 <template>
-  <div class="fixed bottom-0 left-0 right-0 z-40 safe-bottom">
-    <div class="mx-auto max-w-6xl px-3 sm:px-4 pb-3 sm:pb-4">
+  <div class="fixed bottom-0 left-0 right-0 z-50 safe-bottom pb-2">
+    <div class="mx-auto max-w-6xl px-3 sm:px-4">
       <div class="bar">
         <div class="left">
-          <div class="text-xs sm:text-sm text-slate-600">已选 <span class="font-semibold text-brand-700">{{ count }}</span> 位</div>
+          <div class="text-xs sm:text-sm text-slate-600">已选 <span class="font-semibold text-orange-700">{{ count }}</span> 位</div>
           <button class="link hidden xs:block" @click="app.selectAllFiltered">全选</button>
           <span class="sep hidden xs:inline">|</span>
           <button class="link hidden xs:block" @click="app.clearSelection">清空</button>
@@ -47,7 +47,7 @@ function scoreBatch() {
 
 <style scoped>
 .bar {
-  @apply rounded-3xl border border-slate-200 bg-white/90 backdrop-blur shadow-soft px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4;
+  @apply rounded-3xl border border-slate-200 bg-white/95 backdrop-blur shadow-lg px-3 sm:px-4 py-3 sm:py-3 flex items-center justify-between gap-2 sm:gap-4;
 }
 .left {
   @apply flex items-center gap-2 sm:gap-3;
@@ -56,7 +56,7 @@ function scoreBatch() {
   @apply flex items-center gap-2;
 }
 .link {
-  @apply text-xs sm:text-sm text-brand-700 hover:text-brand-800;
+  @apply text-xs sm:text-sm text-orange-700 hover:text-orange-800;
 }
 .sep {
   @apply text-slate-300;
@@ -65,13 +65,13 @@ function scoreBatch() {
   @apply rounded-2xl px-3 sm:px-4 py-2 text-xs sm:text-sm border border-slate-200 bg-white hover:bg-slate-50 transition disabled:opacity-50 disabled:cursor-not-allowed;
 }
 .btn.active {
-  @apply border-brand-300 bg-brand-50 text-brand-700;
+  @apply border-orange-300 bg-orange-50 text-orange-700;
 }
 .btn-primary {
-  @apply rounded-2xl px-3 sm:px-4 py-2 text-xs sm:text-sm bg-brand-500 text-white hover:bg-brand-600 transition shadow-soft disabled:opacity-50 disabled:cursor-not-allowed;
+  @apply rounded-2xl px-3 sm:px-4 py-2 text-xs sm:text-sm bg-orange-500 text-white hover:bg-orange-600 transition shadow-soft disabled:opacity-50 disabled:cursor-not-allowed;
 }
 .btn-primary.active {
-  @apply ring-2 ring-brand-200;
+  @apply ring-2 ring-orange-200;
 }
 </style>
 

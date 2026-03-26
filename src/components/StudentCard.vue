@@ -117,11 +117,15 @@ function onCardClick() {
     </div>
 
     <!-- 信息 -->
-    <div class="p-1 text-center">
-      <div class="truncate" style="font-size: clamp(10px, 1.5vw, 14px);">{{ student.name }}</div>
-      <div style="font-size: clamp(8px, 1.2vw, 12px);" class="text-slate-500">
-        <span v-if="pet">Lv.{{ pet.level }}</span>
-        <span v-else>未领养</span>
+    <div class="p-1.5 text-center">
+      <div class="truncate font-medium" style="font-size: clamp(11px, 2vw, 14px);">{{ student.name }}</div>
+      <div class="flex items-center justify-center gap-1 mt-0.5">
+        <span v-if="pet" class="text-xs text-orange-500 font-semibold">Lv.{{ pet.level }}</span>
+        <span v-else class="text-xs text-slate-400">未领养</span>
+      </div>
+      <div v-if="pet" class="flex items-center justify-between gap-1 mt-1 text-[9px] text-slate-500">
+        <span>累计 {{ student.points }}</span>
+        <span>徽章 {{ student.badges }}</span>
       </div>
     </div>
   </div>
@@ -218,13 +222,30 @@ function onCardClick() {
           <span class="chip">徽章 {{ student.badges }}</span>
         </div>
 
+        <!-- 分数展示区（参考图样式） -->
+        <div class="grid grid-cols-3 gap-2">
+          <div class="rounded-xl bg-slate-50 p-2 text-center">
+            <div class="text-[10px] text-slate-500">累计</div>
+            <div class="text-sm font-semibold text-slate-700">{{ student.points }}</div>
+          </div>
+          <div class="rounded-xl bg-slate-50 p-2 text-center">
+            <div class="text-[10px] text-slate-500">可用</div>
+            <div class="text-sm font-semibold text-orange-600">{{ student.points }}</div>
+          </div>
+          <div class="rounded-xl bg-slate-50 p-2 text-center">
+            <div class="text-[10px] text-slate-500">成长值</div>
+            <div class="text-sm font-semibold text-slate-700">{{ pet.exp }}</div>
+          </div>
+        </div>
+
+        <!-- 成长进度条 -->
         <div class="space-y-1">
           <div class="flex items-center justify-between text-xs text-slate-500">
-            <span>成长值</span>
+            <span>成长进度</span>
             <span class="flex-shrink-0 ml-2">{{ pet.exp }} / {{ app.expNeed(pet.level) }}</span>
           </div>
           <div class="h-2 rounded-full bg-slate-100 overflow-hidden">
-            <div class="h-full bg-brand-400" :style="{ width: progress + '%' }"></div>
+            <div class="h-full bg-gradient-to-r from-orange-400 to-orange-500" :style="{ width: progress + '%' }"></div>
           </div>
         </div>
 
@@ -270,7 +291,7 @@ function onCardClick() {
   @apply left-3 top-3;
 }
 .lv-badge {
-  @apply absolute right-1 top-1 z-[1] rounded-full bg-brand-500 text-white text-xs font-semibold px-2 py-1 shadow-soft;
+  @apply absolute right-1 top-1 z-[1] rounded-full bg-orange-500 text-white text-xs font-semibold px-2 py-1 shadow-soft;
 }
 .btn {
   @apply rounded-2xl px-4 py-2 text-sm border border-slate-200 bg-white hover:bg-slate-50 transition;
@@ -279,7 +300,7 @@ function onCardClick() {
   @apply rounded-2xl px-4 py-2 text-sm bg-brand-500 text-white hover:bg-brand-600 transition shadow-soft;
 }
 .chip {
-  @apply text-xs rounded-full bg-brand-100 text-brand-700 px-2 py-1;
+  @apply text-xs rounded-full bg-orange-100 text-orange-700 px-2 py-1;
 }
 .check-mini {
   @apply absolute right-1 top-1 h-5 w-5 rounded-full border border-slate-200 bg-white grid place-items-center text-xs text-white;
@@ -293,16 +314,16 @@ function onCardClick() {
 
 /* 迷你模式样式 */
 .mini-pet-area {
-  @apply bg-gradient-to-br from-brand-50 to-white grid place-items-center;
-  height: clamp(40px, 8vw, 80px);
+  @apply bg-gradient-to-br from-orange-50 to-white grid place-items-center;
+  height: clamp(50px, 10vw, 80px);
 }
 .mini-pet-img {
   @apply object-contain;
-  height: clamp(32px, 6vw, 64px);
-  width: clamp(32px, 6vw, 64px);
+  height: clamp(40px, 8vw, 64px);
+  width: clamp(40px, 8vw, 64px);
 }
 .mini-no-pet {
-  font-size: clamp(16px, 3vw, 28px);
+  font-size: clamp(20px, 4vw, 28px);
 }
 
 /* 滑动操作样式 */
@@ -312,7 +333,7 @@ function onCardClick() {
   z-index: 0;
 }
 .swipe-action-bg {
-  @apply absolute inset-y-0 right-0 w-full bg-brand-500 opacity-0;
+  @apply absolute inset-y-0 right-0 w-full bg-orange-500 opacity-0;
   transition: opacity 200ms;
 }
 .swipe-action-icon {

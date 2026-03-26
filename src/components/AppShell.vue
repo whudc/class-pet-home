@@ -61,55 +61,26 @@ watch(
     <DesktopHeader />
 
     <!-- 移动端顶部栏 -->
-    <header class="sm:hidden sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100 safe-top">
-      <div class="mx-auto max-w-7xl px-3 sm:px-4 pt-2 sm:pt-3 pb-2 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-2 sm:gap-3 min-w-0">
-          <div class="h-9 w-9 sm:h-12 sm:w-12 rounded-2xl bg-brand-100 grid place-items-center shadow-soft flex-shrink-0">
-            <span class="text-xl sm:text-2xl">🐾</span>
+    <header class="sm:hidden sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100">
+      <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="h-10 w-10 rounded-2xl bg-orange-500 grid place-items-center shadow-lg flex-shrink-0">
+            <span class="text-xl text-white font-bold">D</span>
           </div>
           <div class="leading-tight min-w-0">
-            <div class="text-xs text-slate-500 hidden xs:block">班级宠物园</div>
+            <div class="text-xs text-slate-500 font-medium">BEAST ACADEMY</div>
             <button
-              class="font-semibold text-slate-900 flex items-center gap-1 sm:gap-2 hover:text-brand-700 transition truncate"
+              class="font-bold text-lg text-slate-900 flex items-center gap-1 hover:text-orange-600 transition truncate"
               @click="app.openModal('classManager')"
             >
-              <span class="truncate">{{ activeName }}</span>
-              <span class="text-slate-400 text-xs sm:text-base">▾</span>
+              <span class="truncate">幻兽学院</span>
             </button>
           </div>
         </div>
 
-        <button class="btn-ghost flex-shrink-0" @click="app.openModal('settings')">
-          <span class="mr-1 sm:mr-2">⚙️</span>
-          <span class="hidden sm:inline">设置与帮助</span>
+        <button class="px-3 py-1.5 rounded-xl bg-slate-100 text-sm text-slate-600 font-medium" @click="app.openModal('settings')">
+          退出
         </button>
-      </div>
-
-      <div class="mx-auto max-w-7xl px-3 sm:px-4 pb-2 sm:pb-3 flex flex-col gap-2">
-        <div class="w-full">
-          <div class="relative">
-            <input
-              v-model="app.ui.query"
-              class="w-full rounded-2xl border-slate-200 bg-white/80 pl-10 pr-4 py-2.5 text-sm touch-manipulation mobile-input"
-              placeholder="搜索学生…"
-              type="search"
-              inputmode="text"
-              enterkeyhint="search"
-            />
-            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
-          </div>
-        </div>
-
-        <div class="flex flex-wrap justify-start sm:justify-end gap-1.5 sm:gap-2">
-          <SortMenu />
-          <button class="btn" @click="app.openModal('leaderboard')">🏆<span class="hidden xs:inline">排行榜</span></button>
-          <button class="btn" @click="app.openModal('shop')">🛍<span class="hidden xs:inline">小商店</span></button>
-          <button class="btn" @click="app.openModal('records')">🕘<span class="hidden xs:inline">记录</span></button>
-          <button class="btn" @click="undoLatest">↩<span class="hidden xs:inline">撤回</span></button>
-          <button class="btn-primary sm:min-w-[100px]" @click="app.ui.batchMode ? app.exitBatchMode() : app.enterBatchMode()">
-            {{ app.ui.batchMode ? '退出批量' : '批量操作' }}
-          </button>
-        </div>
       </div>
     </header>
 
@@ -198,7 +169,74 @@ watch(
     </main>
 
     <!-- 移动端内容区域 -->
-    <main class="sm:hidden mx-auto max-w-7xl px-3 sm:px-4 py-4 sm:py-6" :style="{ paddingTop: app.activeView === 'classroom' ? 0 : '70px' }">
+    <main class="sm:hidden mx-auto max-w-7xl px-4 py-4 pb-24">
+      <!-- 学生卡片标题区 -->
+      <div v-if="app.activeView === 'classroom'" class="mb-4">
+        <h2 class="text-xl font-bold text-slate-900 mb-3">学生卡片</h2>
+
+        <!-- 搜索框 -->
+        <div class="relative mb-3">
+          <input
+            v-model="app.ui.query"
+            class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 pl-11 text-sm shadow-sm"
+            placeholder="搜索学生..."
+            type="search"
+          />
+          <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
+        </div>
+
+        <!-- 功能按钮网格 -->
+        <div class="grid grid-cols-4 gap-2">
+          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="app.setActiveView('leaderboard')">
+            <span class="text-2xl mb-1">🏆</span>
+            <span class="text-xs text-slate-600">光荣榜</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="app.setActiveView('shop')">
+            <span class="text-2xl mb-1">🛍</span>
+            <span class="text-xs text-slate-600">小卖部</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="app.setActiveView('records')">
+            <span class="text-2xl mb-1">🕘</span>
+            <span class="text-xs text-slate-600">记录</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="undoLatest()">
+            <span class="text-2xl mb-1">↩</span>
+            <span class="text-xs text-slate-600">撤回</span>
+          </button>
+        </div>
+
+        <!-- 第二排功能按钮 -->
+        <div class="grid grid-cols-4 gap-2 mt-2">
+          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="app.enterBatchMode()">
+            <span class="text-2xl mb-1">👥</span>
+            <span class="text-xs text-slate-600">批量模式</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="handleAllClass()">
+            <span class="text-2xl mb-1">👨‍‍👧</span>
+            <span class="text-xs text-slate-600">全班操作</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="handleCustomScore()">
+            <span class="text-2xl mb-1">⚙️</span>
+            <span class="text-xs text-slate-600">自定义加分</span>
+          </button>
+          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="handleShareParent()">
+            <span class="text-2xl mb-1">📤</span>
+            <span class="text-xs text-slate-600">分享家长</span>
+          </button>
+        </div>
+
+        <!-- 排序和视图切换 -->
+        <div class="flex gap-2 mt-3">
+          <SortMenu />
+          <button
+            class="flex-1 py-2.5 px-4 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-600 shadow-sm active:bg-slate-50"
+            @click="app.toggleCardViewMode()"
+          >
+            {{ app.ui.cardViewMode === 'large' ? '🗖 大图模式' : '🗗 迷你模式' }}
+          </button>
+        </div>
+      </div>
+
       <StudentGrid v-if="app.activeView === 'classroom'" :key="'classroom'" />
       <ModalLeaderboard v-else-if="app.activeView === 'leaderboard'" as-view :key="'leaderboard'" />
       <ModalShop v-else-if="app.activeView === 'shop'" as-view :key="'shop'" />
@@ -206,6 +244,52 @@ watch(
       <ModalSettings v-else-if="app.activeView === 'settings'" as-view :key="'settings'" />
       <ModalClassManager v-else-if="app.activeView === 'classManager'" as-view :key="'classManager'" />
     </main>
+
+    <!-- 移动端底部导航栏 -->
+    <nav class="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 safe-bottom z-40">
+      <div class="flex items-center justify-around py-2">
+        <button
+          class="flex flex-col items-center justify-center p-2 rounded-xl transition"
+          :class="app.activeView === 'classroom' ? 'text-orange-500' : 'text-slate-400'"
+          @click="app.setActiveView('classroom')"
+        >
+          <span class="text-xl">🏠</span>
+          <span class="text-xs mt-0.5">首页</span>
+        </button>
+        <button
+          class="flex flex-col items-center justify-center p-2 rounded-xl transition"
+          :class="app.activeView === 'leaderboard' ? 'text-orange-500' : 'text-slate-400'"
+          @click="app.setActiveView('leaderboard')"
+        >
+          <span class="text-xl">🏆</span>
+          <span class="text-xs mt-0.5">光荣榜</span>
+        </button>
+        <button
+          class="flex flex-col items-center justify-center p-2 rounded-xl transition"
+          :class="app.activeView === 'shop' ? 'text-orange-500' : 'text-slate-400'"
+          @click="app.setActiveView('shop')"
+        >
+          <span class="text-xl">🛍</span>
+          <span class="text-xs mt-0.5">小卖部</span>
+        </button>
+        <button
+          class="flex flex-col items-center justify-center p-2 rounded-xl transition"
+          :class="app.activeView === 'records' ? 'text-orange-500' : 'text-slate-400'"
+          @click="app.setActiveView('records')"
+        >
+          <span class="text-xl">📋</span>
+          <span class="text-xs mt-0.5">记录</span>
+        </button>
+        <button
+          class="flex flex-col items-center justify-center p-2 rounded-xl transition"
+          :class="app.activeView === 'settings' ? 'text-orange-500' : 'text-slate-400'"
+          @click="app.setActiveView('settings')"
+        >
+          <span class="text-xl">⚙️</span>
+          <span class="text-xs mt-0.5">设置</span>
+        </button>
+      </div>
+    </nav>
 
     <ModalAdoptPet v-if="app.ui.modal === 'adopt'" />
     <ModalScore v-if="app.ui.modal === 'score'" />

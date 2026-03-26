@@ -62,13 +62,13 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocClick))
 
 <style scoped>
 .btn {
-  @apply rounded-lg px-3 py-1.5 text-sm border border-slate-200 bg-white hover:bg-slate-50 transition flex items-center gap-2;
+  @apply rounded-xl px-3 py-2 text-sm border border-slate-200 bg-white hover:bg-slate-50 transition flex items-center gap-2 shadow-sm;
 }
 .item {
-  @apply w-full px-3 py-2 text-sm flex items-center gap-2 hover:bg-slate-50 transition;
+  @apply w-full px-4 py-3 text-sm flex items-center gap-3 hover:bg-slate-50 transition;
 }
 .item.active {
-  @apply bg-brand-50 text-brand-700;
+  @apply bg-orange-50 text-orange-700;
 }
 </style>
 
