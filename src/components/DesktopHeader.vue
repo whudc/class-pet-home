@@ -45,7 +45,7 @@ function handleUpdates() {
 </script>
 
 <template>
-  <header class="desktop-header">
+  <header class="desktop-header hidden sm:block">
     <div class="header-container">
       <!-- 左侧：Logo + 班级名称 -->
       <div class="header-left">
@@ -112,6 +112,13 @@ function handleUpdates() {
   border-bottom: 1px solid #f0f0f3;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   z-index: 100;
+}
+
+/* 移动端完全隐藏 */
+@media (max-width: 640px) {
+  .desktop-header {
+    display: none !important;
+  }
 }
 
 .header-container {

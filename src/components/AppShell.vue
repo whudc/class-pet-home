@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
-import DesktopHeader from '@/components/DesktopHeader.vue'
 
 import StudentGrid from '@/components/StudentGrid.vue'
 import ModalAdoptPet from '@/components/modals/ModalAdoptPet.vue'
@@ -57,9 +56,6 @@ watch(
 
 <template>
   <div class="min-h-screen bg-gradient-to-b from-white to-slate-50">
-    <!-- 电脑端顶部导航栏 -->
-    <DesktopHeader />
-
     <!-- 移动端顶部栏 -->
     <header class="sm:hidden sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100">
       <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
