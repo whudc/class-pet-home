@@ -17,21 +17,20 @@ const HOST = process.env.HOST || '0.0.0.0'
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
 
-// 设置 HTML 文件不缓存
+// 禁用所有缓存
 app.use((req, res, next) => {
-  if (req.path === '/' || req.path.endsWith('.html')) {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
-    res.setHeader('Pragma', 'no-cache')
-    res.setHeader('Expires', '0')
-  } else {
-    // 静态资源设置较长缓存，但带版本哈希
-    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable')
-  }
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  res.setHeader('Pragma', 'no-cache')
+  res.setHeader('Expires', '0')
   next()
 })
 
-// 服务前端静态文件
-app.use(express.static(path.join(__dirname, 'dist')))
+// 服务前端静态文件（带缓存控制）
+app.use(express.static(path.join(__dirname, 'dist'), {
+  setHeaders: (res) => {
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+  }
+}))
 
 // 路由
 app.use('/api/auth', authRoutes)

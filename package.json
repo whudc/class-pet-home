@@ -10,11 +10,8 @@
     "dev": "vite",
     "dev:all": "concurrently \"npm run dev\" \"npm run server:dev\"",
     "server:dev": "npm run dev --prefix server",
-    "build": "vue-tsc -p tsconfig.app.json --noEmit && vite build",
-    "preview": "npm run build && wrangler dev",
-    "electron:dev": "concurrently \"vite\" \"wait-on http://localhost:5173 && electron .\"",
-    "electron:build": "npm run build && electron-builder",
-    "electron:start": "electron .",
+    "build": "vue-tsc -p tsconfig.app.json --noEmit && vite build && node scripts/add-version.js",
+    "preview": "npm run build && wrangler deploy",
     "deploy": "npm run build && wrangler deploy"
   },
   "main": "electron/main.js",
