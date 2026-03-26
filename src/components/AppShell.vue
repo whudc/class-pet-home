@@ -20,11 +20,14 @@ const app = useAppStore()
 
 const activeName = computed(() => app.activeClassroom?.name ?? '')
 
-// 微信浏览器刷新
+// 微信浏览器刷新 - 使用时间戳 + 随机数强制绕过缓存
 function forceRefresh() {
   const ts = Date.now()
-  const url = window.location.href.split('?')[0]
-  window.location.href = `${url}?t=${ts}`
+  const rand = Math.random().toString(36).slice(2, 8)
+  const href = window.location.href
+  const newUrl = `${href.split('?')[0]}?_t=${ts}&_r=${rand}`
+  // 使用 location.replace 替换当前历史，避免后退按钮问题
+  window.location.replace(newUrl)
 }
 
 function undoLatest() {

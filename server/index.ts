@@ -13,22 +13,28 @@ const app = express()
 const PORT = process.env.PORT || 3000
 const HOST = process.env.HOST || '0.0.0.0'
 
-// 中间件
-app.use(cors())
-app.use(express.json({ limit: '10mb' }))
-
-// 禁用所有缓存
+// 中间件 - 禁用所有缓存
 app.use((req, res, next) => {
-  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate')
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0, s-maxage=0')
   res.setHeader('Pragma', 'no-cache')
   res.setHeader('Expires', '0')
+  res.setHeader('Surrogate-Control', 'no-store')
+  res.setHeader('X-Accel-Expires', '0')
   next()
 })
 
+app.use(cors())
+app.use(express.json({ limit: '10mb' }))
+
 // 服务前端静态文件（带缓存控制）
 app.use(express.static(path.join(__dirname, 'dist'), {
+  maxAge: 0,
+  etag: false,
+  lastModified: false,
   setHeaders: (res) => {
-    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate')
+    res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0')
+    res.setHeader('Pragma', 'no-cache')
+    res.setHeader('Expires', '0')
   }
 }))
 
