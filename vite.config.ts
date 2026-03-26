@@ -9,7 +9,7 @@ import { cloudflare } from "@cloudflare/vite-plugin";
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [vue(), VitePWA({
-    registerType: 'autoUpdate',
+    registerType: 'prompt',
     includeAssets: ['icon-192.png', 'icon-512.png'],
     manifest: {
       name: '班级宠物园',
@@ -38,7 +38,12 @@ export default defineConfig({
       lang: 'zh-CN'
     },
     workbox: {
-      maximumFileSizeToCacheInBytes: 3 * 1024 * 1024
+      maximumFileSizeToCacheInBytes: 3 * 1024 * 1024,
+      cleanupOutdatedCaches: true,
+      navigateFallbackDenylist: [/^\/api\//],
+    },
+    devOptions: {
+      enabled: false
     }
   }), cloudflare()],
   base: './',  // 使用相对路径，支持 file:// 协议直接打开
