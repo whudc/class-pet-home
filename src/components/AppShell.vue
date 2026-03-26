@@ -20,6 +20,13 @@ const app = useAppStore()
 
 const activeName = computed(() => app.activeClassroom?.name ?? '')
 
+// 微信浏览器刷新
+function forceRefresh() {
+  const ts = Date.now()
+  const url = window.location.href.split('?')[0]
+  window.location.href = `${url}?t=${ts}`
+}
+
 function undoLatest() {
   const res = app.undoLatestScoreRecord()
   if (!res.ok) window.alert(res.reason)
@@ -71,9 +78,14 @@ watch(
           </div>
         </div>
 
-        <button class="px-4 py-2 rounded-xl bg-slate-100 text-sm text-slate-600 font-medium" @click="app.openModal('settings')">
-          退出
-        </button>
+        <div class="flex items-center gap-2">
+          <button class="px-3 py-2 rounded-xl bg-orange-100 text-sm text-orange-600 font-medium" @click="forceRefresh">
+            🔄
+          </button>
+          <button class="px-4 py-2 rounded-xl bg-slate-100 text-sm text-slate-600 font-medium" @click="app.openModal('settings')">
+            退出
+          </button>
+        </div>
       </div>
     </header>
 
