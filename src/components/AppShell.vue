@@ -63,22 +63,19 @@ watch(
     <!-- 移动端顶部栏 -->
     <header class="sm:hidden sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100">
       <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="h-10 w-10 rounded-2xl bg-orange-500 grid place-items-center shadow-lg flex-shrink-0">
-            <span class="text-xl text-white font-bold">D</span>
-          </div>
+        <div class="flex items-center gap-2 min-w-0 flex-1">
           <div class="leading-tight min-w-0">
-            <div class="text-xs text-slate-500 font-medium">BEAST ACADEMY</div>
+            <div class="text-sm font-semibold text-slate-700 truncate">班级宠物园</div>
             <button
-              class="font-bold text-lg text-slate-900 flex items-center gap-1 hover:text-orange-600 transition truncate"
+              class="text-base font-bold text-slate-900 hover:text-orange-600 transition truncate"
               @click="app.openModal('classManager')"
             >
-              <span class="truncate">幻兽学院</span>
+              {{ activeName }}
             </button>
           </div>
         </div>
 
-        <button class="px-3 py-1.5 rounded-xl bg-slate-100 text-sm text-slate-600 font-medium" @click="app.openModal('settings')">
+        <button class="px-4 py-2 rounded-xl bg-slate-100 text-sm text-slate-600 font-medium" @click="app.openModal('settings')">
           退出
         </button>
       </div>
@@ -170,10 +167,8 @@ watch(
 
     <!-- 移动端内容区域 -->
     <main class="sm:hidden mx-auto max-w-7xl px-4 py-4 pb-24">
-      <!-- 学生卡片标题区 -->
+      <!-- 搜索和排序 -->
       <div v-if="app.activeView === 'classroom'" class="mb-4">
-        <h2 class="text-xl font-bold text-slate-900 mb-3">学生卡片</h2>
-
         <!-- 搜索框 -->
         <div class="relative mb-3">
           <input
@@ -185,55 +180,9 @@ watch(
           <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
         </div>
 
-        <!-- 功能按钮网格 -->
-        <div class="grid grid-cols-4 gap-2">
-          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="app.setActiveView('leaderboard')">
-            <span class="text-2xl mb-1">🏆</span>
-            <span class="text-xs text-slate-600">光荣榜</span>
-          </button>
-          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="app.setActiveView('shop')">
-            <span class="text-2xl mb-1">🛍</span>
-            <span class="text-xs text-slate-600">小卖部</span>
-          </button>
-          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="app.setActiveView('records')">
-            <span class="text-2xl mb-1">🕘</span>
-            <span class="text-xs text-slate-600">记录</span>
-          </button>
-          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="undoLatest()">
-            <span class="text-2xl mb-1">↩</span>
-            <span class="text-xs text-slate-600">撤回</span>
-          </button>
-        </div>
-
-        <!-- 第二排功能按钮 -->
-        <div class="grid grid-cols-4 gap-2 mt-2">
-          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="app.enterBatchMode()">
-            <span class="text-2xl mb-1">👥</span>
-            <span class="text-xs text-slate-600">批量模式</span>
-          </button>
-          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="handleAllClass()">
-            <span class="text-2xl mb-1">👨‍‍👧</span>
-            <span class="text-xs text-slate-600">全班操作</span>
-          </button>
-          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="handleCustomScore()">
-            <span class="text-2xl mb-1">⚙️</span>
-            <span class="text-xs text-slate-600">自定义加分</span>
-          </button>
-          <button class="flex flex-col items-center justify-center p-3 rounded-2xl bg-white border border-slate-200 shadow-sm active:bg-slate-50 transition" @click="handleShareParent()">
-            <span class="text-2xl mb-1">📤</span>
-            <span class="text-xs text-slate-600">分享家长</span>
-          </button>
-        </div>
-
-        <!-- 排序和视图切换 -->
-        <div class="flex gap-2 mt-3">
+        <!-- 排序 -->
+        <div class="flex gap-2">
           <SortMenu />
-          <button
-            class="flex-1 py-2.5 px-4 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-600 shadow-sm active:bg-slate-50"
-            @click="app.toggleCardViewMode()"
-          >
-            {{ app.ui.cardViewMode === 'large' ? '🗖 大图模式' : '🗗 迷你模式' }}
-          </button>
         </div>
       </div>
 
@@ -319,19 +268,5 @@ watch(
 }
 .toolbar-btn.active {
   @apply bg-brand-50 border-brand-200 text-brand-600;
-}
-
-/* 移动端底部导航栏样式 */
-.nav-item {
-  @apply flex flex-col items-center justify-center py-2 text-xs text-slate-600 rounded-xl transition active:bg-slate-100;
-}
-.nav-icon {
-  @apply text-xl mb-0.5;
-}
-.nav-action-icon {
-  @apply text-lg;
-}
-.nav-label {
-  @apply text-[10px] leading-none;
 }
 </style>
