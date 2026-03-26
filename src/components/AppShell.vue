@@ -49,6 +49,23 @@ function handleCustomScore() {
   app.openModal('customScore')
 }
 
+function toggleGroupMode() {
+  if (app.ui.batchMode && app.ui.batchAction === 'score') {
+    app.exitBatchMode()
+  } else {
+    app.enterBatchMode()
+    app.setBatchAction('score')
+  }
+}
+
+function toggleBatchMode() {
+  if (app.ui.batchMode) {
+    app.exitBatchMode()
+  } else {
+    app.enterBatchMode()
+  }
+}
+
 onMounted(async () => {
   await app.startAutoBackupLoop()
 })
@@ -191,9 +208,53 @@ watch(
           <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">🔎</span>
         </div>
 
-        <!-- 排序 -->
-        <div class="flex gap-2">
-          <SortMenu />
+        <!-- 排序和功能按钮 -->
+        <div class="space-y-2">
+          <!-- 第一排：排序 + 视图模式 + 个人/小组 -->
+          <div class="flex gap-2">
+            <SortMenu />
+            <button
+              class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-600 shadow-sm active:bg-slate-50"
+              @click="app.toggleCardViewMode()"
+            >
+              {{ app.ui.cardViewMode === 'large' ? '大图模式' : '迷你模式' }}
+            </button>
+            <button
+              class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-600 shadow-sm active:bg-slate-50"
+              @click="toggleGroupMode()"
+            >
+              {{ app.ui.batchMode && app.ui.batchAction === 'score' ? '小组' : '个人' }}
+            </button>
+          </div>
+
+          <!-- 第二排：分享家长 + 批量模式 + 全班操作 + 自定义加分 -->
+          <div class="flex gap-2">
+            <button
+              class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-600 shadow-sm active:bg-slate-50"
+              @click="handleShareParent()"
+            >
+              分享家长
+            </button>
+            <button
+              class="flex-1 py-2 px-3 rounded-xl shadow-sm active:bg-slate-50 text-sm font-medium"
+              :class="app.ui.batchMode ? 'bg-orange-500 text-white border-orange-300' : 'bg-white text-slate-600 border-slate-200'"
+              @click="toggleBatchMode()"
+            >
+              {{ app.ui.batchMode ? '退出批量' : '批量模式' }}
+            </button>
+            <button
+              class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-600 shadow-sm active:bg-slate-50"
+              @click="handleAllClass()"
+            >
+              全班操作
+            </button>
+            <button
+              class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-600 shadow-sm active:bg-slate-50"
+              @click="handleCustomScore()"
+            >
+              自定义加分
+            </button>
+          </div>
         </div>
       </div>
 
