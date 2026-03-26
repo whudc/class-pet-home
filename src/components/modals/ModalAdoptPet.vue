@@ -21,7 +21,9 @@ function adopt() {
     app.adoptPetForStudents(targetIds.value, picked.value.id, picked.value.name, onlyIfNoPet.value)
     app.exitBatchMode()
   } else {
-    app.adoptPet(student.value.id, picked.value.id, picked.value.name)
+    const s = student.value
+    if (!s) return
+    app.adoptPet(s.id, picked.value.id, picked.value.name)
   }
   app.closeModal()
 }
