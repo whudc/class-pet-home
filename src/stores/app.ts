@@ -451,6 +451,9 @@ export const useAppStore = defineStore('app', {
     setActiveView(view: 'classroom' | 'leaderboard' | 'shop' | 'records' | 'settings' | 'classManager') {
       this.activeView = view
     },
+    setSortMode(mode: SortMode) {
+      this.ui.sortMode = mode
+    },
     enterBatchMode() {
       this.ui.batchMode = true
       this.ui.batchAction = 'score'
@@ -519,6 +522,14 @@ export const useAppStore = defineStore('app', {
         if (onlyIfNoPet && s.pet) continue
         if (s.pet) s.points = 0
         s.pet = { petId, name: petName, level: 1, exp: 0 }
+      }
+      this.persist()
+    },
+    clearAllPoints() {
+      const c = this.activeClassroom
+      if (!c) return
+      for (const s of c.students) {
+        s.points = 0
       }
       this.persist()
     },

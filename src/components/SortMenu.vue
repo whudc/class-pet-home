@@ -1,32 +1,50 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, nextTick } from 'vue'
 import { useAppStore, type SortMode } from '@/stores/app'
 
 const app = useAppStore()
 const open = ref(false)
 const rootEl = ref<HTMLElement | null>(null)
+const dropdownEl = ref<HTMLElement | null>(null)
+const dropdownPos = ref({ top: '0px', left: '0px' })
 
-type Option = { key: SortMode; label: string; icon: string }
+type Option = { key: SortMode; label: string }
 
 const options: Option[] = [
-  { key: 'name', label: '按姓名排序', icon: '👤' },
-  { key: 'number', label: '按学号排序', icon: '#️⃣' },
-  { key: 'badges', label: '按徽章排序', icon: '🏅' },
-  { key: 'growth', label: '按养成进度', icon: '📈' },
+  { key: 'name', label: '姓名' },
+  { key: 'number', label: '学号' },
+  { key: 'badges', label: '徽章' },
+  { key: 'growth', label: '成长' },
 ]
 
 const current = computed(() => options.find((o) => o.key === app.ui.sortMode) ?? options[0])
 
+function toggleDropdown() {
+  open.value = !open.value
+  if (open.value) {
+    nextTick(() => {
+      if (rootEl.value) {
+        const rect = rootEl.value.getBoundingClientRect()
+        dropdownPos.value = {
+          top: `${rect.bottom + 4}px`,
+          left: `${rect.left}px`
+        }
+      }
+    })
+  }
+}
+
 function choose(key: SortMode) {
-  app.ui.sortMode = key
+  app.setSortMode(key)
   open.value = false
 }
 
 function onDocClick(e: MouseEvent) {
   if (!open.value) return
-  const el = rootEl.value
-  if (!el) return
-  if (el.contains(e.target as Node)) return
+  const root = rootEl.value
+  const dropdown = dropdownEl.value
+  if (root && root.contains(e.target as Node)) return
+  if (dropdown && dropdown.contains(e.target as Node)) return
   open.value = false
 }
 
@@ -36,67 +54,43 @@ onBeforeUnmount(() => document.removeEventListener('mousedown', onDocClick))
 
 <template>
   <div ref="rootEl" class="relative">
-    <button class="btn" @click="open = !open">
-      <span class="mr-2">{{ current.icon }}</span>
+    <button class="btn" @click="toggleDropdown">
       <span class="text-sm font-medium">{{ current.label }}</span>
-      <span class="ml-2 text-slate-400">▾</span>
+      <span class="text-slate-400">▾</span>
     </button>
 
-    <!-- 使用 Teleport 传送到 body，避免被父容器层叠上下文影响 -->
-    <Teleport to="body">
-      <div
-        v-if="open"
-        class="sort-menu-overlay"
-        @click="open = false"
+    <div
+      v-if="open"
+      ref="dropdownEl"
+      class="dropdown"
+      :style="{ top: dropdownPos.top, left: dropdownPos.left }"
+    >
+      <button
+        v-for="o in options"
+        :key="o.key"
+        class="item"
+        :class="{ active: app.ui.sortMode === o.key }"
+        @click="choose(o.key)"
       >
-        <div class="sort-menu-dropdown" @click.stop>
-          <button
-            v-for="o in options"
-            :key="o.key"
-            class="item"
-            :class="{ active: app.ui.sortMode === o.key }"
-            @click="choose(o.key)"
-          >
-            <span class="w-6 grid place-items-center">{{ o.icon }}</span>
-            <span class="flex-1 text-left">{{ o.label }}</span>
-          </button>
-        </div>
-      </div>
-    </Teleport>
+        <span class="flex-1 text-left">{{ o.label }}</span>
+      </button>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .btn {
-  @apply rounded-xl px-3 py-2 text-sm border border-slate-200 bg-white hover:bg-slate-50 transition flex items-center gap-2 shadow-sm;
+  @apply rounded-xl px-3 py-2 text-sm border border-slate-200 bg-white hover:bg-slate-50 transition flex items-center gap-1 shadow-sm;
+}
+.dropdown {
+  position: fixed;
+  @apply w-32 rounded-xl bg-white border border-slate-200 shadow-lg overflow-hidden;
+  z-index: 9999;
 }
 .item {
-  @apply w-full px-4 py-3 text-sm flex items-center gap-3 hover:bg-slate-50 transition;
+  @apply w-full px-4 py-2.5 text-sm text-left hover:bg-slate-50 transition cursor-pointer;
 }
 .item.active {
   @apply bg-orange-50 text-orange-700;
 }
-
-/* 遮罩层 - 使用 Teleport 传送到 body，确保最高层级 */
-.sort-menu-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
-  background: rgba(0, 0, 0, 0.4);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-/* 下拉菜单样式 */
-.sort-menu-dropdown {
-  position: relative;
-  min-width: 200px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-  padding: 8px;
-}
 </style>
-

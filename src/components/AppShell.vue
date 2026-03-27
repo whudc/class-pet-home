@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, watch } from 'vue'
 import { useAppStore } from '@/stores/app'
+import DesktopHeader from '@/components/DesktopHeader.vue'
 
 import StudentGrid from '@/components/StudentGrid.vue'
 import ModalAdoptPet from '@/components/modals/ModalAdoptPet.vue'
@@ -49,13 +50,10 @@ function handleCustomScore() {
   app.openModal('customScore')
 }
 
+// 个人/小组切换 - 预留功能
 function toggleGroupMode() {
-  if (app.ui.batchMode && app.ui.batchAction === 'score') {
-    app.exitBatchMode()
-  } else {
-    app.enterBatchMode()
-    app.setBatchAction('score')
-  }
+  // TODO: 实现小组功能
+  window.alert('小组功能待实现')
 }
 
 function toggleBatchMode() {
@@ -83,6 +81,9 @@ watch(
 
 <template>
   <div class="min-h-screen bg-gradient-to-b from-white to-slate-50">
+    <!-- 电脑端顶部导航栏 -->
+    <DesktopHeader />
+
     <!-- 移动端顶部栏 -->
     <header class="sm:hidden sticky top-0 z-30 bg-white/90 backdrop-blur border-b border-slate-100">
       <div class="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-3">
@@ -143,6 +144,15 @@ watch(
             >
               <span>{{ app.ui.cardViewMode === 'large' ? '🗖' : '🗗' }}</span>
               <span>{{ app.ui.cardViewMode === 'large' ? '迷你模式' : '大图模式' }}</span>
+            </button>
+
+            <!-- 个人/小组切换（预留） -->
+            <button
+              class="toolbar-btn"
+              @click="toggleGroupMode()"
+            >
+              <span>👥</span>
+              <span>小组</span>
             </button>
 
             <!-- 批量模式 -->
@@ -223,7 +233,7 @@ watch(
               class="flex-1 py-2 px-3 rounded-xl bg-white border border-slate-200 text-sm font-medium text-slate-600 shadow-sm active:bg-slate-50"
               @click="toggleGroupMode()"
             >
-              {{ app.ui.batchMode && app.ui.batchAction === 'score' ? '小组' : '个人' }}
+              小组
             </button>
           </div>
 
