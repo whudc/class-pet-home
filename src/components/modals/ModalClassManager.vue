@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useAppStore } from '@/stores/app'
 import ModalBase from '@/components/modals/ModalBase.vue'
 
-defineProps<{ asView?: boolean }>()
+const props = defineProps<{ asView?: boolean }>()
 
 const app = useAppStore()
 const activeTab = ref<'class' | 'student' | 'group'>('class')
@@ -181,7 +181,7 @@ function handleClose() {
         <h2 class="section-title">班级管理</h2>
         <div class="class-actions">
           <button class="action-btn" @click="toggleAddClass">新建班级</button>
-          <button class="action-btn" :disabled="!active" @click="startEditClassroom(active.id)">重命名班级</button>
+          <button class="action-btn" :disabled="!active" @click="startEditClassroom(active!.id)">重命名班级</button>
           <button class="action-btn danger" :disabled="app.data.classrooms.length <= 1" @click="removeClassroom(active!.id)">删除班级</button>
         </div>
 
