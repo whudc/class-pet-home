@@ -1,0 +1,14 @@
+# Railway Config-as-Code
+
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+startCommand = "cd server && npx tsx index.ts"
+healthcheckPath = "/api/health"
+healthcheckTimeout = 60
+restartPolicyType = "ON_FAILURE"
+
+# 持久化存储配置
+[volumes]
+"/app/server/data" = { name = "data", size = 1024 }
